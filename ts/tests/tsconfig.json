@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "lib": ["es2022", "DOM"],
+      "module": "CommonJS",
+      "target": "es2020",
+      "outDir": "lib",
+      "esModuleInterop": true,
+      "declaration": true,
+      "sourceMap": true,
+      "resolveJsonModule": true,
+      "skipLibCheck": true,
+      "baseUrl": ".",
+      "paths": {
+        "@gbg-lending-client": ["../src/index.ts"],
+        "@gbg-lending-client/*": ["../src/*"]
+      }
+    },
+    "include": ["**/*"],
+    "exclude": ["node_modules"]
+  }
+  
