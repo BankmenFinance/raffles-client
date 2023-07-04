@@ -11,7 +11,7 @@
   "author": "Bankmen Finance",
   "license": "Apache 2.0",
   "scripts": {
-    "build": "npx tsc",
+    "build": "rm -rf ./lib && npx tsc",
     "lint": "eslint ts/src/* --ext .ts",
     "fmt": "prettier --config .prettierrc 'ts/src/**/*.ts' --check && prettier --config .prettierrc 'ts/tests/**/*.ts' --check",
     "fmt:fix": "prettier --config .prettierrc 'ts/src/**/*.ts' --write && prettier --config .prettierrc 'ts/tests/**/*.ts' --write",

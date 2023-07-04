@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { expand } from '../src/utils/randomness';
 import { RafflesClient } from '../src/client/raffles';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 import { Cluster } from '@raffles/types';
 import { loadWallet } from 'utils';
 import { Raffle } from '@raffles/accounts';
-import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
-import { getEntrantsSize } from '../src/utils/shared';
 
 // Load  Env Variables
 require('dotenv').config({

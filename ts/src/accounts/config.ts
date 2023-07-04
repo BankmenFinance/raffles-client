@@ -5,9 +5,8 @@ import {
   SystemProgram
 } from '@solana/web3.js';
 import { RafflesClient } from '../client';
-import { ConfigState } from '../types/on-chain';
+import { ConfigState, InitializeArgs } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
-import { InitializeArgs } from '../../../lib/types/on-chain';
 import { deriveConfigAddress } from '../utils/pda';
 
 /**
