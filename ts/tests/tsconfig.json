@@ -11,8 +11,8 @@
       "skipLibCheck": true,
       "baseUrl": ".",
       "paths": {
-        "@gbg-lending-client": ["../src/index.ts"],
-        "@gbg-lending-client/*": ["../src/*"]
+        "@raffles": ["../src/index.ts"],
+        "@raffles/*": ["../src/*"]
       }
     },
     "include": ["**/*"],

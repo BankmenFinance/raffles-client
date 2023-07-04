@@ -1,0 +1,36 @@
+[package]
+authors = [
+    "Hugo <hugo@blockmountain.io",
+]
+name = "raffles-client"
+description = "Client utilities for the Bankmen Finance Raffles Program."
+version = "1.0.0"
+edition = "2021"
+keywords = ["solana", "anchor", "bankmen finance", "cpi"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = [ "devnet" ]
+devnet = [
+    "anchor-spl/devnet",
+]
+mainnet-beta = [
+    "raffles/mainnet-beta"
+]
+
+[dependencies]
+anchor-client = "0.26.0"
+anchor-lang = "0.26.0"
+anchor-spl = { version = "0.26.0", features = [
+    "token",
+    "associated_token",
+]}
+raffles = { path = "../../../raffles/programs/raffles", features = [ "client" ] }
+log = "0.4.17"
+mpl-token-metadata = { version = "1.8.1", features = [ "no-entrypoint" ] }
+solana-account-decoder = "~1.14.12"
+solana-client = "~1.14.12"
+solana-sdk = "~1.14.12"
+thiserror = "1.0.31"
+tokio = "1.14.1"

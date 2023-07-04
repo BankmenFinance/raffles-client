@@ -15,6 +15,8 @@ import {
   deriveProceedsAddress
 } from '../utils/pda';
 import BN from 'bn.js';
+import { deriveConfigAddress } from '../utils/pda';
+import { getAssociatedTokenAddress } from '@project-serum/associated-token';
 
 /**
  * Represents a Raffle.
@@ -127,6 +129,100 @@ export class Raffle {
       state as RaffleState,
       onStateUpdateHandler
     );
+  }
+
+  /**
+   * Buys tickets for this raffle. .
+   * @param client The amount of tickets to buy.
+   * @returns A promise which may resolve a Raffle.
+   */
+  async addPrize(prizeMint: PublicKey, prizeIndex: number, amount: BN) {
+    const from = await getAssociatedTokenAddress(
+      this.client.walletPubkey,
+      prizeMint
+    );
+    const [prize] = derivePrizeAddress(
+      this.address,
+      prizeIndex,
+      this.client.programId
+    );
+    const ix = await this.client.methods
+      .addPrize(prizeIndex, amount)
+      .accountsStrict({
+        raffle: this.address,
+        from,
+        prize,
+        prizeMint,
+        creator: this.client.walletPubkey,
+        payer: this.client.walletPubkey,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: SYSVAR_RENT_PUBKEY
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
+  }
+
+  /**
+   * Buys tickets for this raffle. .
+   * @param client The amount of tickets to buy.
+   * @returns A promise which may resolve a Raffle.
+   */
+  async buyTickets(amount: number, buyerTokenAccount?: PublicKey) {
+    const [config] = deriveConfigAddress(this.client.programId);
+    const [proceeds, proceedsBump] = deriveProceedsAddress(
+      this.address,
+      this.client.programId
+    );
+    if (buyerTokenAccount) {
+      const ix = await this.client.methods
+        .buyTickets(amount)
+        .accountsStrict({
+          raffle: this.address,
+          entrants: this.state.entrants,
+          proceeds,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          config,
+          buyerTokenAccount,
+          buyerTransferAuthority: this.client.walletPubkey
+        })
+        .instruction();
+
+      return {
+        accounts: [],
+        ixs: [ix],
+        signers: []
+      };
+    } else {
+      const buyerTokenAccount = await getAssociatedTokenAddress(
+        this.client.walletPubkey,
+        this.state.proceedsMint
+      );
+
+      const ix = await this.client.methods
+        .buyTickets(amount)
+        .accountsStrict({
+          raffle: this.address,
+          entrants: this.state.entrants,
+          proceeds,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          config,
+          buyerTokenAccount,
+          buyerTransferAuthority: this.client.walletPubkey
+        })
+        .instruction();
+
+      return {
+        accounts: [],
+        ixs: [ix],
+        signers: []
+      };
+    }
   }
 
   /**

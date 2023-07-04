@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PublicKey } from '@solana/web3.js';
+import {
+  BPF_LOADER_PROGRAM_ID,
+  PublicKey,
+  SystemProgram
+} from '@solana/web3.js';
 import { RafflesClient } from '../client';
 import { ConfigState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
+import { InitializeArgs } from '../../../lib/types/on-chain';
+import { deriveConfigAddress } from '../utils/pda';
 
 /**
  * Represents the global Config.
@@ -17,6 +23,42 @@ export class ConfigAccount {
     private _onStateUpdate?: StateUpdateHandler<ConfigState>
   ) {
     this.subscribe();
+  }
+
+  /**
+   * Derives program addresses and generates necessary intructions to create a Raffle.
+   * @param client The Raffles Client.
+   * @param endTimestamp The ending timestamp of the raffle.
+   * @param ticketPrice The price of a ticket, denominated in native units.
+   * @param maxEntrants The maximum number of entrants in this raffle.
+   * @returns The accounts, instructions and signers, if necessary.
+   */
+  static async initialize(client: RafflesClient, args: InitializeArgs) {
+    console.log(client.programId.toBase58());
+    const [config] = deriveConfigAddress(client.programId);
+
+    const [rafflesProgramData] = PublicKey.findProgramAddressSync(
+      [client.programId.toBuffer()],
+      BPF_LOADER_PROGRAM_ID
+    );
+    console.log(rafflesProgramData.toBase58());
+
+    const ix = await client.methods
+      .initialize(args)
+      .accountsStrict({
+        config,
+        rafflesProgram: client.programId,
+        rafflesProgramData,
+        upgradeAuthority: client.walletPubkey,
+        systemProgram: SystemProgram.programId
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
   }
 
   /**

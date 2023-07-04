@@ -1,0 +1,12 @@
+{
+    "rust-analyzer.server.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "1.63.0-aarch64-apple-darwin"
+    },
+    "[rust]": {
+        "editor.formatOnSave": true
+    },
+    "rust-analyzer.linkedProjects": [
+        "rust/client/Cargo.toml",
+        "cli/Cargo.toml"
+    ],
+}

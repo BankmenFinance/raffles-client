@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Cluster } from '@gbg-lending-client/types';
 import { expand } from '../src/utils/randomness';
 
 // Load  Env Variables

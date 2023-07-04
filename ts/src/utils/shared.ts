@@ -1,5 +1,9 @@
 import { BN } from '@project-serum/anchor';
 
+export const getEntrantsSize = (maxEntrants: number) => {
+  return 8 + 4 + 4 + 32 * maxEntrants;
+};
+
 /**
  * Fetches GraphQL data from the GBG API.
  * @param api The API URL.

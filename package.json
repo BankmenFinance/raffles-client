@@ -1,6 +1,6 @@
 {
   "name": "@bankmenfi/raffles-client",
-  "version": "1.2.0",
+  "version": "0.0.1",
   "description": "TypeScript SDK for Bankmen Finance Raffles",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

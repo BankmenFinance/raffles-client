@@ -1,6 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { B_RAFFLE, B_PROCEEDS, B_PRIZE, B_CONFIG } from '../constants/shared';
 import { utils } from '@project-serum/anchor';
+import BN from 'bn.js';
 
 export const deriveConfigAddress = (programId: PublicKey) => {
   const seed = utils.bytes.utf8.encode(B_CONFIG);
@@ -39,7 +40,7 @@ export const derivePrizeAddress = (
 ) => {
   const seed = utils.bytes.utf8.encode(B_PRIZE);
 
-  const buffer = Buffer.alloc(8);
+  const buffer = Buffer.alloc(4);
   buffer.writeUInt32LE(prizeIndex, 0);
 
   return utils.publicKey.findProgramAddressSync(
