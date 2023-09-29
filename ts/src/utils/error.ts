@@ -21,7 +21,7 @@ export const getErrName = (errCode: number): string => {
   const code = Number(errCode);
   const customProgramErrors = _rafflesIdl.errors;
   if (code >= 100 && code <= 5000) {
-    return `This is an Anchor program error code ${code}. Please check here: https://github.com/project-serum/anchor/blob/master/lang/src/error.rs`;
+    return `This is an Anchor program error code ${code}. Please check here: https://github.com/coral-xyz/anchor/blob/master/lang/src/error.rs`;
   }
 
   for (let i = 0; i < customProgramErrors.length; i++) {
@@ -37,7 +37,7 @@ export const getErrNameAndMsg = (errCode: number): string => {
   const code = Number(errCode);
   const customProgramErrors = _rafflesIdl.errors;
   if (code >= 100 && code <= 5000) {
-    return `This is an Anchor program error code ${code}. Please check here: https://github.com/project-serum/anchor/blob/master/lang/src/error.rs`;
+    return `This is an Anchor program error code ${code}. Please check here: https://github.com/coral-xyz/anchor/blob/master/lang/src/error.rs`;
   }
 
   for (let i = 0; i < customProgramErrors.length; i++) {

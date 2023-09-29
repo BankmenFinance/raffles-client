@@ -1,4 +1,4 @@
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 export type Cluster = 'localnet' | 'devnet' | 'mainnet-beta';
 
@@ -14,8 +14,12 @@ export type OrderbookListenerCB = (bidsOrAsks: ParsedOrderbook) => void;
 export type Fills = { price: number; amount: number }[];
 
 export interface Wallet {
-  signTransaction(tx: Transaction): Promise<Transaction>;
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]>;
+  signTransaction<T extends Transaction | VersionedTransaction>(
+    tx: T
+  ): Promise<T>;
+  signAllTransactions<T extends Transaction | VersionedTransaction>(
+    txs: T[]
+  ): Promise<T[]>;
   publicKey: PublicKey;
 }
 

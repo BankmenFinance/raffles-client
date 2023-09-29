@@ -1,4 +1,4 @@
-import { BN } from '@project-serum/anchor';
+import { BN } from '@coral-xyz/anchor';
 
 export const getEntrantsSize = (maxEntrants: number) => {
   return 8 + 4 + 4 + 32 * maxEntrants;

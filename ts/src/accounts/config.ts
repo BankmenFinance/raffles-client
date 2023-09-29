@@ -33,14 +33,11 @@ export class ConfigAccount {
    * @returns The accounts, instructions and signers, if necessary.
    */
   static async initialize(client: RafflesClient, args: InitializeArgs) {
-    console.log(client.programId.toBase58());
     const [config] = deriveConfigAddress(client.programId);
-
     const [rafflesProgramData] = PublicKey.findProgramAddressSync(
       [client.programId.toBuffer()],
-      BPF_LOADER_PROGRAM_ID
+      new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111')
     );
-    console.log(rafflesProgramData.toBase58());
 
     const ix = await client.methods
       .initialize(args)
@@ -48,6 +45,7 @@ export class ConfigAccount {
         config,
         rafflesProgram: client.programId,
         rafflesProgramData,
+        payer: client.walletPubkey,
         upgradeAuthority: client.walletPubkey,
         systemProgram: SystemProgram.programId
       })

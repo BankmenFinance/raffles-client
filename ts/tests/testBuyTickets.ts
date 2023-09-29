@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { RafflesClient } from '../src/client/raffles';
-import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
+import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Cluster } from '@raffles/types';
 import { loadWallet } from 'utils';
 import { Raffle } from '@raffles/accounts';
@@ -10,7 +10,7 @@ import {
   SystemProgram,
   Keypair
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@project-serum/anchor/dist/cjs/utils/token';
+import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token';
 import {
   createInitializeAccountInstruction,
   createCloseAccountInstruction
@@ -19,10 +19,6 @@ import {
 // Load  Env Variables
 require('dotenv').config({
   path: __dirname + `/default.env`
-});
-
-require('dotenv').config({
-  path: __dirname + `/args.env` // Can also be used to override default env variables
 });
 
 // Constants

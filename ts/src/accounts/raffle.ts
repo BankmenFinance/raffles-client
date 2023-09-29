@@ -1,22 +1,41 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AccountMeta,
   Keypair,
   PublicKey,
   SystemProgram,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
 import { RafflesClient } from '../client';
-import { RaffleState } from '../types/on-chain';
+import { PrizeType, RaffleState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
-import { TOKEN_PROGRAM_ID } from '@project-serum/anchor/dist/cjs/utils/token';
-import {
-  deriveRaffleAddress,
-  derivePrizeAddress,
-  deriveProceedsAddress
-} from '../utils/pda';
+import { deriveRaffleAddress, derivePrizeAddress } from '../utils/pda';
 import BN from 'bn.js';
 import { deriveConfigAddress } from '../utils/pda';
 import { getAssociatedTokenAddress } from '@project-serum/associated-token';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID
+} from '@solana/spl-token';
+import {
+  GetAssetProofRpcResponse,
+  Metaplex,
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken
+} from '@metaplex-foundation/js';
+import { MPL_TOKEN_AUTH_RULES_PROGRAM_ID } from '@metaplex-foundation/mpl-token-auth-rules';
+import {
+  MPL_TOKEN_METADATA_PROGRAM_ID,
+  TokenStandard
+} from '@metaplex-foundation/mpl-token-metadata';
+import {
+  ConcurrentMerkleTreeAccount,
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID
+} from '@solana/spl-account-compression';
 
 /**
  * Represents a Raffle.
@@ -53,10 +72,7 @@ export class Raffle {
       entrants.publicKey,
       client.programId
     );
-    const [proceeds, proceedsBump] = deriveProceedsAddress(
-      raffle,
-      client.programId
-    );
+    const proceeds = await getAssociatedTokenAddress(raffle, proceedsMint);
 
     const ix = await client.methods
       .createRaffle(endTimestamp, ticketPrice, maxEntrants)
@@ -69,7 +85,8 @@ export class Raffle {
         payer: client.walletPubkey,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY
+        rent: SYSVAR_RENT_PUBKEY,
+        associatedTokenProgram: ''
       })
       .instruction();
 
@@ -136,30 +153,181 @@ export class Raffle {
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve a Raffle.
    */
-  async addPrize(prizeMint: PublicKey, prizeIndex: number, amount: BN) {
-    const from = await getAssociatedTokenAddress(
-      this.client.walletPubkey,
-      prizeMint
-    );
+  async addPrize(
+    amount: BN,
+    prizeType: PrizeType,
+    asset?: Sft | SftWithToken | Nft | NftWithToken,
+    merkleTree?: ConcurrentMerkleTreeAccount,
+    assetProof?: GetAssetProofRpcResponse
+  ) {
+    if ((asset && merkleTree) || (asset && assetProof)) {
+      throw new Error(
+        'Invalid arguments. `asset` and `merkleTree` cannot be passed at the same time.'
+      );
+    }
+
     const [prize] = derivePrizeAddress(
       this.address,
-      prizeIndex,
+      this.prizes,
       this.client.programId
     );
-    const ix = await this.client.methods
-      .addPrize(prizeIndex, amount)
-      .accountsStrict({
-        raffle: this.address,
-        from,
+
+    const accounts = {
+      raffle: this.address,
+      prize,
+      creator: this.client.walletPubkey,
+      instructions: null,
+      prizeMint: null,
+      prizeTokenAccount: null,
+      prizeEdition: null,
+      prizeMetadata: null,
+      prizeTokenRecord: null,
+      prizeMerkleTree: null,
+      prizeMerkleTreeAuthority: null,
+      prizeLeafOwner: null,
+      prizeLeafDelegate: null,
+      sourceTokenAccount: null,
+      sourceTokenRecord: null,
+      authorizationRules: null,
+      payer: this.client.walletPubkey,
+      systemProgram: SystemProgram.programId,
+      tokenProgram: null,
+      associatedTokenProgram: null,
+      metadataProgram: null,
+      authRulesProgram: null,
+      bubblegumProgram: null,
+      accountCompressionProgram: null,
+      noOpProgram: null,
+      rent: SYSVAR_RENT_PUBKEY
+    };
+
+    // if we get in here we know for sure that this is a token | legacy nft | programmable nft
+    if (asset) {
+      const sourceTokenAccount = await getAssociatedTokenAddress(
+        this.client.walletPubkey,
+        asset.mint.address
+      );
+      const prizeTokenAccount = await getAssociatedTokenAddress(
         prize,
-        prizeMint,
-        creator: this.client.walletPubkey,
-        payer: this.client.walletPubkey,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY
+        asset.mint.address
+      );
+      accounts.sourceTokenAccount = sourceTokenAccount;
+      accounts.prizeTokenAccount = prizeTokenAccount;
+
+      // check if it is legacy nft | programmable nft
+      if (
+        asset.tokenStandard == TokenStandard.NonFungible ||
+        asset.tokenStandard == TokenStandard.NonFungibleEdition ||
+        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
+        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
+      ) {
+        const metadata = this.client.metaplex
+          .nfts()
+          .pdas()
+          .metadata({ mint: asset.mint.address });
+        const edition = this.client.metaplex
+          .nfts()
+          .pdas()
+          .masterEdition({ mint: asset.mint.address });
+
+        accounts.prizeEdition = edition;
+        accounts.prizeMint = asset.mint.address;
+        accounts.prizeMetadata = metadata;
+
+        accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
+        accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
+      }
+
+      // check if it is programmable nft
+      if (
+        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
+        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
+      ) {
+        const sourceTokenRecord = this.client.metaplex
+          .nfts()
+          .pdas()
+          .tokenRecord({ mint: asset.mint.address, token: sourceTokenAccount });
+        const prizeTokenRecord = this.client.metaplex
+          .nfts()
+          .pdas()
+          .tokenRecord({ mint: asset.mint.address, token: prizeTokenAccount });
+        accounts.sourceTokenRecord = sourceTokenRecord;
+        accounts.prizeTokenRecord = prizeTokenRecord;
+      }
+      let authorizationRules = null;
+
+      // check if the programmable nft has a rule set
+      if (
+        asset.programmableConfig &&
+        asset.programmableConfig.ruleSet &&
+        !PublicKey.default.equals(asset.programmableConfig.ruleSet)
+      ) {
+        authorizationRules = asset.programmableConfig.ruleSet;
+      }
+      // set the authorization rules account we tried to fetch before
+      // if it is null, no problem, means it shouldn't be there anyway
+      accounts.authorizationRules = authorizationRules;
+      if (authorizationRules) {
+        accounts.authRulesProgram = MPL_TOKEN_AUTH_RULES_PROGRAM_ID;
+      }
+
+      accounts.tokenProgram = TOKEN_PROGRAM_ID;
+      accounts.associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
+    }
+
+    // if we get in here we know for sure that this is a compressed nft
+    if (merkleTree && assetProof) {
+      accounts.prizeMerkleTree = merkleTree;
+      accounts.prizeMerkleTreeAuthority = merkleTree.getAuthority();
+      accounts.prizeLeafDelegate = prize;
+      accounts.prizeLeafOwner = prize;
+      accounts.noOpProgram = SPL_NOOP_PROGRAM_ID;
+      accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
+    }
+
+    const prizeTypeArgs = merkleTree
+      ? {
+          prizeType: {
+            compressed: {
+              root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+              dataHash: [
+                ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+              ],
+              creatorHash: [
+                ...new PublicKey(
+                  asset.compression.creator_hash.trim()
+                ).toBytes()
+              ],
+              nonce: asset.compression.leaf_id,
+              index: asset.compression.leaf_id
+            }
+          }
+        }
+      : prizeType;
+
+    const ix = await this.client.methods
+      .addPrize({
+        prizeIndex: this.prizes,
+        amount,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        prizeType: prizeTypeArgs as any
       })
+      .accountsStrict(accounts)
       .instruction();
+
+    if (merkleTree) {
+      // parse the list of proof addresses into a valid AccountMeta[]
+      const canopyDepth = merkleTree.getCanopyDepth();
+      const proof: AccountMeta[] = assetProof.proof
+        // eslint-disable-next-line no-extra-boolean-cast
+        .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
+        .map((node: string) => ({
+          pubkey: new PublicKey(node),
+          isSigner: false,
+          isWritable: false
+        }));
+      ix.keys.push(...proof);
+    }
 
     return {
       accounts: [],
@@ -175,9 +343,9 @@ export class Raffle {
    */
   async buyTickets(amount: number, buyerTokenAccount?: PublicKey) {
     const [config] = deriveConfigAddress(this.client.programId);
-    const [proceeds, proceedsBump] = deriveProceedsAddress(
+    const proceeds = await getAssociatedTokenAddress(
       this.address,
-      this.client.programId
+      this.proceedsMint
     );
     if (buyerTokenAccount) {
       const ix = await this.client.methods
@@ -223,6 +391,26 @@ export class Raffle {
         signers: []
       };
     }
+  }
+
+  /** Gets the creator of the Raffle. */
+  get creator(): PublicKey {
+    return this.state.creator;
+  }
+
+  /** Gets the Entrants account of the Raffle. */
+  get entrants(): PublicKey {
+    return this.state.entrants;
+  }
+
+  /** Gets the proceeds Token Mint of the Raffle. */
+  get proceedsMint(): PublicKey {
+    return this.state.proceedsMint;
+  }
+
+  /** Gets the total amount of prizes registered for this Raffle. */
+  get prizes(): number {
+    return this.state.totalPrizes;
   }
 
   /**

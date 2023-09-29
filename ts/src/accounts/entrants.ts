@@ -1,21 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  AccountInfo,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY
-} from '@solana/web3.js';
+import { AccountInfo, PublicKey } from '@solana/web3.js';
 import { RafflesClient } from '../client';
 import { EntrantsState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
-import { TOKEN_PROGRAM_ID } from '@project-serum/anchor/dist/cjs/utils/token';
-import {
-  deriveRaffleAddress,
-  derivePrizeAddress,
-  deriveProceedsAddress
-} from '../utils/pda';
-import BN from 'bn.js';
 
 /**
  * Represents an Entrants account, this account stores information about entrants of a Raffle.

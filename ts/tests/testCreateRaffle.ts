@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { expand } from '../src/utils/randomness';
 import { RafflesClient } from '../src/client/raffles';
-import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
+import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Cluster } from '@raffles/types';
 import { loadWallet } from 'utils';
 import { Raffle } from '@raffles/accounts';
@@ -12,10 +11,6 @@ import { getEntrantsSize } from '../src/utils/shared';
 // Load  Env Variables
 require('dotenv').config({
   path: __dirname + `/default.env`
-});
-
-require('dotenv').config({
-  path: __dirname + `/args.env` // Can also be used to override default env variables
 });
 
 // Constants
@@ -38,7 +33,7 @@ export const main = async () => {
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const endTimestamp = currentTimestamp + RAFFLE_DURATION;
 
-  const { accounts, ixs, signers } = await Raffle.create(
+  const { ixs, signers } = await Raffle.create(
     rafflesClient,
     WSOL_MINT,
     new BN(endTimestamp),

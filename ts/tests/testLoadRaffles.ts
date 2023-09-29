@@ -1,17 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { RafflesClient } from '@raffles/client/raffles';
-import { expand } from '../src/utils/randomness';
 import { Cluster } from '@raffles/types';
 import { Raffle } from '@raffles/accounts';
-import { stringify } from 'querystring';
 
 // Load  Env Variables
 require('dotenv').config({
   path: __dirname + `/default.env`
-});
-
-require('dotenv').config({
-  path: __dirname + `/args.env` // Can also be used to override default env variables
 });
 
 // Constants

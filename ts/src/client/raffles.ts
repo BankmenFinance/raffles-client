@@ -3,19 +3,28 @@ import {
   TransactionInstruction,
   Signer,
   ConfirmOptions,
-  Connection
+  Connection,
+  PublicKey
 } from '@solana/web3.js';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import {
+  AccountNamespace,
+  AnchorProvider,
+  MethodsNamespace,
+  Program,
+  Provider
+} from '@coral-xyz/anchor';
 import { CONFIGS } from '../constants';
 import rafflesIdl from '../generated/idl/raffles.json';
 import type { Raffles } from '../generated/types/raffles';
 import type { Cluster, Wallet } from '../types';
+import { Metaplex } from '@metaplex-foundation/js';
 
 /**
  * This Raffles Client exposes utility methods to facilitate transaction submission.
  */
 export class RafflesClient {
   private _program: Program<Raffles>;
+  public readonly metaplex: Metaplex;
 
   constructor(
     readonly cluster: Cluster,
@@ -33,6 +42,7 @@ export class RafflesClient {
       CONFIGS[this.cluster].PROGRAM_ID,
       provider
     );
+    this.metaplex = Metaplex.make(this.connection);
     if (wallet) {
       this.connectWallet(wallet, confirmOpts);
     }
@@ -47,38 +57,38 @@ export class RafflesClient {
     );
   }
 
-  private get _provider() {
+  private get _provider(): Provider {
     return this._program.provider;
   }
 
-  get anchorProvider() {
+  get anchorProvider(): AnchorProvider {
     const provider = this._program.provider as AnchorProvider;
     if (provider.wallet) {
       return provider;
     }
   }
 
-  get connection() {
+  get connection(): Connection {
     return this._provider.connection;
   }
 
-  get methods() {
+  get methods(): MethodsNamespace<Raffles> {
     return this._program.methods;
   }
 
-  get accounts() {
+  get accounts(): AccountNamespace<Raffles> {
     return this._program.account;
   }
 
-  get isWalletConnected() {
+  get isWalletConnected(): boolean {
     return !!this.anchorProvider;
   }
 
-  get walletPubkey() {
+  get walletPubkey(): PublicKey {
     return this.anchorProvider?.wallet.publicKey;
   }
 
-  get programId() {
+  get programId(): PublicKey {
     return CONFIGS[this.cluster].PROGRAM_ID;
   }
 
@@ -86,11 +96,11 @@ export class RafflesClient {
     eventName: string,
     // eslint-disable-next-line
     callback: (event: any, slot: number) => void
-  ) {
+  ): number {
     return this._program.addEventListener(eventName, callback);
   }
 
-  async removeEventListener(listener: number) {
+  async removeEventListener(listener: number): Promise<void> {
     return await this._program.removeEventListener(listener);
   }
 
@@ -98,7 +108,7 @@ export class RafflesClient {
     tx: Transaction,
     signers?: Signer[],
     opts?: ConfirmOptions
-  ) {
+  ): Promise<string> {
     return this.anchorProvider?.sendAndConfirm(tx, signers, opts);
   }
 
@@ -106,7 +116,7 @@ export class RafflesClient {
     ixs: TransactionInstruction[],
     signers?: Signer[],
     opts?: ConfirmOptions
-  ) {
+  ): Promise<string> {
     const tx = new Transaction();
     tx.add(...ixs);
     return this.sendAndConfirm(tx, signers, opts);
