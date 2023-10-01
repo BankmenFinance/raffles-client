@@ -5,7 +5,8 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  SYSVAR_SLOT_HASHES_PUBKEY
 } from '@solana/web3.js';
 import { RafflesClient } from '../client';
 import { PrizeType, RaffleState } from '../types/on-chain';
@@ -341,56 +342,36 @@ export class Raffle {
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve a Raffle.
    */
-  async buyTickets(amount: number, buyerTokenAccount?: PublicKey) {
+  async buyTickets(amount: number) {
     const [config] = deriveConfigAddress(this.client.programId);
     const proceeds = await getAssociatedTokenAddress(
       this.address,
       this.proceedsMint
     );
-    if (buyerTokenAccount) {
-      const ix = await this.client.methods
-        .buyTickets(amount)
-        .accountsStrict({
-          raffle: this.address,
-          entrants: this.state.entrants,
-          proceeds,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          config,
-          buyerTokenAccount,
-          buyerTransferAuthority: this.client.walletPubkey
-        })
-        .instruction();
+    const buyerTokenAccount = await getAssociatedTokenAddress(
+      this.client.walletPubkey,
+      this.state.proceedsMint
+    );
 
-      return {
-        accounts: [],
-        ixs: [ix],
-        signers: []
-      };
-    } else {
-      const buyerTokenAccount = await getAssociatedTokenAddress(
-        this.client.walletPubkey,
-        this.state.proceedsMint
-      );
+    const ix = await this.client.methods
+      .buyTickets(amount)
+      .accountsStrict({
+        raffle: this.address,
+        entrants: this.state.entrants,
+        proceeds,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        config,
+        buyerTokenAccount,
+        buyerTransferAuthority: this.client.walletPubkey,
+        slotHashes: SYSVAR_SLOT_HASHES_PUBKEY
+      })
+      .instruction();
 
-      const ix = await this.client.methods
-        .buyTickets(amount)
-        .accountsStrict({
-          raffle: this.address,
-          entrants: this.state.entrants,
-          proceeds,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          config,
-          buyerTokenAccount,
-          buyerTransferAuthority: this.client.walletPubkey
-        })
-        .instruction();
-
-      return {
-        accounts: [],
-        ixs: [ix],
-        signers: []
-      };
-    }
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
   }
 
   /** Gets the creator of the Raffle. */

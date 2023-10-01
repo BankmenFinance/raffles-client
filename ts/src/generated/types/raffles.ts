@@ -415,6 +415,12 @@ export type Raffles = {
           isMut: false;
           isSigner: false;
           docs: ['The Token Program Interface.'];
+        },
+        {
+          name: 'slotHashes';
+          isMut: false;
+          isSigner: false;
+          docs: ['The Slot Hashes Sysvar.', ''];
         }
       ];
       args: [
@@ -1170,16 +1176,16 @@ export type Raffles = {
           index: false;
         },
         {
-          name: 'prizeType';
+          name: 'prizeInfo';
           type: {
-            defined: 'PrizeType';
+            defined: 'PrizeInfo';
           };
           index: false;
         }
       ];
     },
     {
-      name: 'TicketsBought';
+      name: 'TicketBought';
       fields: [
         {
           name: 'raffle';
@@ -1192,13 +1198,8 @@ export type Raffles = {
           index: false;
         },
         {
-          name: 'amount';
+          name: 'index';
           type: 'u32';
-          index: false;
-        },
-        {
-          name: 'cost';
-          type: 'u64';
           index: false;
         }
       ];
@@ -1877,6 +1878,12 @@ export const IDL: Raffles = {
           isMut: false,
           isSigner: false,
           docs: ['The Token Program Interface.']
+        },
+        {
+          name: 'slotHashes',
+          isMut: false,
+          isSigner: false,
+          docs: ['The Slot Hashes Sysvar.', '']
         }
       ],
       args: [
@@ -2632,16 +2639,16 @@ export const IDL: Raffles = {
           index: false
         },
         {
-          name: 'prizeType',
+          name: 'prizeInfo',
           type: {
-            defined: 'PrizeType'
+            defined: 'PrizeInfo'
           },
           index: false
         }
       ]
     },
     {
-      name: 'TicketsBought',
+      name: 'TicketBought',
       fields: [
         {
           name: 'raffle',
@@ -2654,13 +2661,8 @@ export const IDL: Raffles = {
           index: false
         },
         {
-          name: 'amount',
+          name: 'index',
           type: 'u32',
-          index: false
-        },
-        {
-          name: 'cost',
-          type: 'u64',
           index: false
         }
       ]
