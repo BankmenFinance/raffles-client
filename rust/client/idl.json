@@ -1213,6 +1213,80 @@
             }
         },
         {
+            "name": "TokenPrizeInfo",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "mint",
+                        "type": "publicKey"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "CompressedPrizeInfo",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "merkleTree",
+                        "type": "publicKey"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "LegacyPrizeInfo",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "mint",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "metadata",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "edition",
+                        "type": "publicKey"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ProgrammablePrizeInfo",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "mint",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "metadata",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "edition",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "tokenRecord",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "authorizationRules",
+                        "type": {
+                            "option": "publicKey"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "name": "PrizeType",
             "type": {
                 "kind": "enum",
@@ -1246,8 +1320,7 @@
                         "name": "Token",
                         "fields": [
                             {
-                                "name": "mint",
-                                "type": "publicKey"
+                                "defined": "TokenPrizeInfo"
                             }
                         ]
                     },
@@ -1255,8 +1328,7 @@
                         "name": "Compressed",
                         "fields": [
                             {
-                                "name": "merkle_tree",
-                                "type": "publicKey"
+                                "defined": "CompressedPrizeInfo"
                             }
                         ]
                     },
@@ -1264,16 +1336,7 @@
                         "name": "Legacy",
                         "fields": [
                             {
-                                "name": "mint",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "metadata",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "edition",
-                                "type": "publicKey"
+                                "defined": "LegacyPrizeInfo"
                             }
                         ]
                     },
@@ -1281,26 +1344,7 @@
                         "name": "Programmable",
                         "fields": [
                             {
-                                "name": "mint",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "metadata",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "edition",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "token_record",
-                                "type": "publicKey"
-                            },
-                            {
-                                "name": "authorization_rules",
-                                "type": {
-                                    "option": "publicKey"
-                                }
+                                "defined": "ProgrammablePrizeInfo"
                             }
                         ]
                     }
