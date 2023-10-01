@@ -1,30 +1,64 @@
-pub mod client;
-pub mod error;
-pub mod instructions;
-pub mod utils;
+use anchor_lang::prelude::*;
 
-pub mod prelude {
-    pub use crate::client::*;
-    pub use crate::error::*;
-    pub use crate::utils::*;
-}
-use anchor_lang::prelude::Pubkey;
-use raffles::state::{Config, Entrants, Raffle};
+anchor_gen::generate_cpi_interface!(idl_path = "idl.json");
 
-#[derive(Default, Clone)]
-pub struct ConfigAccount {
-    pub state: Box<Config>,
-    pub pubkey: Pubkey,
-}
+#[cfg(feature = "mainnet-beta")]
+declare_id!("C51NyFn3yu3zfTwswacr1XZsxHoeFW3vDM7Jg9T9em2N");
+#[cfg(not(feature = "mainnet-beta"))]
+declare_id!("C51NyFn3yu3zfTwswacr1XZsxHoeFW3vDM7Jg9T9em2N");
 
-#[derive(Default, Clone)]
-pub struct EntrantsAccount {
-    pub state: Box<Entrants>,
-    pub pubkey: Pubkey,
+impl std::fmt::Debug for RaffleCreated {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RaffleCreated")
+            .field("raffle", &self.raffle)
+            .field("creator", &self.creator)
+            .field("max_entrants", &self.max_entrants)
+            .field("end_timestamp", &self.end_timestamp)
+            .field("ticket_price", &self.ticket_price)
+            .finish()
+    }
 }
 
-#[derive(Default, Clone)]
-pub struct RaffleAccount {
-    pub state: Box<Raffle>,
-    pub pubkey: Pubkey,
+impl std::fmt::Debug for TicketBought {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TicketsBought")
+            .field("raffle", &self.raffle)
+            .field("buyer", &self.buyer)
+            .field("ticket_index", &self.index)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for PrizeAdded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrizeAdded")
+            .field("raffle", &self.raffle)
+            .field("prize", &self.prize)
+            .field("prize_index", &self.prize_index)
+            .field("amount", &self.amount)
+            .field("prize_info", &self.prize_info)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for PrizeClaimed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrizeClaimed")
+            .field("raffle", &self.raffle)
+            .field("prize", &self.prize)
+            .field("prize_index", &self.prize_index)
+            .field("ticket_index", &self.ticket_index)
+            .field("winner", &self.winner)
+            .field("amount", &self.amount)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for WinnerRevealed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WinnerRevealed")
+            .field("raffle", &self.raffle)
+            .field("randomness", &self.randomness)
+            .finish()
+    }
 }
