@@ -1281,7 +1281,7 @@ dependencies = [
 
 [[package]]
 name = "raffles-client"
-version = "0.2.4"
+version = "0.1.0"
 dependencies = [
  "anchor-gen",
  "anchor-lang",
