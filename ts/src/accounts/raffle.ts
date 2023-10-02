@@ -8,7 +8,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   SYSVAR_SLOT_HASHES_PUBKEY
 } from '@solana/web3.js';
-import { RafflesClient } from '../client';
+import { RafflesProgramClient } from '../client';
 import { PrizeType, RaffleState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
 import { deriveRaffleAddress, derivePrizeAddress } from '../utils/pda';
@@ -21,7 +21,6 @@ import {
 } from '@solana/spl-token';
 import {
   GetAssetProofRpcResponse,
-  Metaplex,
   Nft,
   NftWithToken,
   Sft,
@@ -43,9 +42,9 @@ import {
  *
  * This class exposes utility methods related to this on-chain account.
  */
-export class Raffle {
+export class RaffleAccount {
   constructor(
-    readonly client: RafflesClient,
+    readonly client: RafflesProgramClient,
     readonly address: PublicKey,
     public state: RaffleState,
     private _onStateUpdate?: StateUpdateHandler<RaffleState>
@@ -62,7 +61,7 @@ export class Raffle {
    * @returns The accounts, instructions and signers, if necessary.
    */
   static async create(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     proceedsMint: PublicKey,
     endTimestamp: BN,
     ticketPrice: BN,
@@ -105,15 +104,15 @@ export class Raffle {
    * @returns A promise which may resolve an array of Raffles.
    */
   static async loadAll(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     onStateUpdateHandler?: StateUpdateHandler<RaffleState>
-  ): Promise<Raffle[]> {
+  ): Promise<RaffleAccount[]> {
     const raffleAccounts = await client.accounts.raffle.all();
     const raffles = [];
 
     for (const raffleAccount of raffleAccounts) {
       raffles.push(
-        new Raffle(
+        new RaffleAccount(
           client,
           raffleAccount.publicKey,
           raffleAccount.account as RaffleState,
@@ -133,15 +132,15 @@ export class Raffle {
    * @returns A promise which may resolve a Raffle.
    */
   static async load(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     address: PublicKey,
     onStateUpdateHandler?: StateUpdateHandler<RaffleState>
-  ): Promise<Raffle> {
+  ): Promise<RaffleAccount> {
     const state = await client.accounts.raffle.fetchNullable(address);
 
     if (state === null) return null;
 
-    return new Raffle(
+    return new RaffleAccount(
       client,
       address,
       state as RaffleState,

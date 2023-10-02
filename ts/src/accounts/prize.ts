@@ -5,7 +5,7 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
-import { RafflesClient } from '../client';
+import { RafflesProgramClient } from '../client';
 import { PrizeState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
 import {
@@ -16,7 +16,7 @@ import {
   GetAssetProofRpcResponse
 } from '@metaplex-foundation/js';
 import { getAssociatedTokenAddress } from '@project-serum/associated-token';
-import { Raffle } from './raffle';
+import { RaffleAccount } from './raffle';
 import {
   ConcurrentMerkleTreeAccount,
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
@@ -38,9 +38,9 @@ import {
  *
  * This class exposes utility methods related to this on-chain account.
  */
-export class Prize {
+export class PrizeAccount {
   constructor(
-    readonly client: RafflesClient,
+    readonly client: RafflesProgramClient,
     readonly address: PublicKey,
     public state: PrizeState,
     private _onStateUpdate?: StateUpdateHandler<PrizeState>
@@ -55,15 +55,15 @@ export class Prize {
    * @returns A promise which may resolve an array of Prizes.
    */
   static async loadAll(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     onStateUpdateHandler?: StateUpdateHandler<PrizeState>
-  ): Promise<Prize[]> {
+  ): Promise<PrizeAccount[]> {
     const raffleAccounts = await client.accounts.prize.all();
     const raffles = [];
 
     for (const raffleAccount of raffleAccounts) {
       raffles.push(
-        new Prize(
+        new PrizeAccount(
           client,
           raffleAccount.publicKey,
           raffleAccount.account as PrizeState,
@@ -83,15 +83,15 @@ export class Prize {
    * @returns A promise which may resolve a Prize.
    */
   static async load(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     address: PublicKey,
     onStateUpdateHandler?: StateUpdateHandler<PrizeState>
-  ): Promise<Prize> {
+  ): Promise<PrizeAccount> {
     const state = await client.accounts.prize.fetchNullable(address);
 
     if (state === null) return null;
 
-    return new Prize(
+    return new PrizeAccount(
       client,
       address,
       state as PrizeState,
@@ -105,7 +105,7 @@ export class Prize {
    * @returns A promise which may resolve a Raffle.
    */
   async claimPrize(
-    raffle: Raffle,
+    raffle: RaffleAccount,
     ticketIndex: number,
     asset?: Sft | SftWithToken | Nft | NftWithToken,
     merkleTree?: ConcurrentMerkleTreeAccount,

@@ -1,5 +1,5 @@
 import { AccountInfo, PublicKey } from '@solana/web3.js';
-import { RafflesClient } from '../client';
+import { RafflesProgramClient } from '../client';
 import { EntrantsState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
 
@@ -8,9 +8,9 @@ import { StateUpdateHandler } from '../types';
  *
  * This class exposes utility methods related to this on-chain account.
  */
-export class Entrants {
+export class EntrantsAccount {
   constructor(
-    readonly client: RafflesClient,
+    readonly client: RafflesProgramClient,
     readonly address: PublicKey,
     public state: EntrantsState,
     private data: AccountInfo<Buffer>,
@@ -27,10 +27,10 @@ export class Entrants {
    * @returns A promise which may resolve a Loan.
    */
   static async load(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     address: PublicKey,
     onStateUpdateHandler?: StateUpdateHandler<EntrantsState>
-  ): Promise<Entrants> {
+  ): Promise<EntrantsAccount> {
     const accountInfo = await client.accounts.entrants.getAccountInfo(address);
 
     const state = client.accounts.entrants.coder.accounts.decode(
@@ -40,7 +40,7 @@ export class Entrants {
 
     if (state === null) return null;
 
-    return new Entrants(
+    return new EntrantsAccount(
       client,
       address,
       state as EntrantsState,

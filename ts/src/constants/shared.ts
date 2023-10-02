@@ -1,6 +1,9 @@
 import { PublicKey } from '@solana/web3.js';
 import type { Cluster, Config } from '../types';
 
+export const MAX_ENTRANTS = 5000;
+export const MAX_TICKETS = 20;
+
 export const B_CONFIG = 'config';
 export const B_RAFFLE = 'raffle';
 export const B_PROCEEDS = 'proceeds';

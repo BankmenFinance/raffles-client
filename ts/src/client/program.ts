@@ -22,30 +22,34 @@ import { Metaplex } from '@metaplex-foundation/js';
 /**
  * This Raffles Client exposes utility methods to facilitate transaction submission.
  */
-export class RafflesClient {
+export class RafflesProgramClient {
   private _program: Program<Raffles>;
   public readonly metaplex: Metaplex;
 
   constructor(
     readonly cluster: Cluster,
+    rpcEndpoint?: string,
     wallet?: Wallet,
+    programId?: PublicKey,
     confirmOpts = AnchorProvider.defaultOptions()
   ) {
-    const provider = {
-      connection: new Connection(
-        CONFIGS[cluster].RPC_ENDPOINT,
-        confirmOpts.commitment
-      )
-    };
-    this._program = new Program<Raffles>(
-      rafflesIdl as Raffles,
-      CONFIGS[this.cluster].PROGRAM_ID,
-      provider
-    );
-    this.metaplex = Metaplex.make(this.connection);
     if (wallet) {
       this.connectWallet(wallet, confirmOpts);
+    } else {
+      const provider = {
+        connection: new Connection(
+          rpcEndpoint ? rpcEndpoint : CONFIGS[cluster].RPC_ENDPOINT,
+          confirmOpts.commitment
+        )
+      };
+      this._program = new Program<Raffles>(
+        rafflesIdl as Raffles,
+        programId ? programId : CONFIGS[this.cluster].PROGRAM_ID,
+        provider
+      );
     }
+
+    this.metaplex = Metaplex.make(this.connection);
   }
 
   connectWallet(wallet: Wallet, confirmOpts = AnchorProvider.defaultOptions()) {

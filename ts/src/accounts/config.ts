@@ -1,10 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  BPF_LOADER_PROGRAM_ID,
-  PublicKey,
-  SystemProgram
-} from '@solana/web3.js';
-import { RafflesClient } from '../client';
+import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { RafflesProgramClient } from '../client';
 import { ConfigState, InitializeArgs } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
 import { deriveConfigAddress } from '../utils/pda';
@@ -16,7 +11,7 @@ import { deriveConfigAddress } from '../utils/pda';
  */
 export class ConfigAccount {
   constructor(
-    readonly client: RafflesClient,
+    readonly client: RafflesProgramClient,
     readonly address: PublicKey,
     public state: ConfigState,
     private _onStateUpdate?: StateUpdateHandler<ConfigState>
@@ -32,7 +27,7 @@ export class ConfigAccount {
    * @param maxEntrants The maximum number of entrants in this raffle.
    * @returns The accounts, instructions and signers, if necessary.
    */
-  static async initialize(client: RafflesClient, args: InitializeArgs) {
+  static async initialize(client: RafflesProgramClient, args: InitializeArgs) {
     const [config] = deriveConfigAddress(client.programId);
     const [rafflesProgramData] = PublicKey.findProgramAddressSync(
       [client.programId.toBuffer()],
@@ -66,7 +61,7 @@ export class ConfigAccount {
    * @returns A promise which may resolve a Config.
    */
   static async load(
-    client: RafflesClient,
+    client: RafflesProgramClient,
     address: PublicKey,
     onStateUpdateHandler?: StateUpdateHandler<ConfigState>
   ): Promise<ConfigAccount> {

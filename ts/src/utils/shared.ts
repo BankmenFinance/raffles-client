@@ -11,19 +11,18 @@ export const getEntrantsSize = (maxEntrants: number) => {
  * @param variables The variables that need to be injected into the GraphQL query.
  * @returns The response JSON.
  */
-export const fetchGraphqlData = async (
+export async function fetchGraphqlData<T>(
   api: string,
-  query: string,
-  variables?: object
-): Promise<unknown> => {
+  query: string
+): Promise<T> {
   const res = await fetch(api, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, variables })
+    body: JSON.stringify({ query })
   });
 
-  return await res.json();
-};
+  return (await res.json()) as T;
+}
 
 export function bnToDate(bn: BN): Date {
   return new Date(bn.toNumber() * 1000);
