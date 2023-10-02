@@ -1384,6 +1384,21 @@
             ]
         },
         {
+            "name": "RaffleClosed",
+            "fields": [
+                {
+                    "name": "raffle",
+                    "type": "publicKey",
+                    "index": false
+                },
+                {
+                    "name": "creator",
+                    "type": "publicKey",
+                    "index": false
+                }
+            ]
+        },
+        {
             "name": "PrizeAdded",
             "fields": [
                 {
