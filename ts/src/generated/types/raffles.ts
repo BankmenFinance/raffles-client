@@ -1026,6 +1026,80 @@ export type Raffles = {
       };
     },
     {
+      name: 'TokenPrizeInfo';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'mint';
+            type: 'publicKey';
+          }
+        ];
+      };
+    },
+    {
+      name: 'CompressedPrizeInfo';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'merkleTree';
+            type: 'publicKey';
+          }
+        ];
+      };
+    },
+    {
+      name: 'LegacyPrizeInfo';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'mint';
+            type: 'publicKey';
+          },
+          {
+            name: 'metadata';
+            type: 'publicKey';
+          },
+          {
+            name: 'edition';
+            type: 'publicKey';
+          }
+        ];
+      };
+    },
+    {
+      name: 'ProgrammablePrizeInfo';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'mint';
+            type: 'publicKey';
+          },
+          {
+            name: 'metadata';
+            type: 'publicKey';
+          },
+          {
+            name: 'edition';
+            type: 'publicKey';
+          },
+          {
+            name: 'tokenRecord';
+            type: 'publicKey';
+          },
+          {
+            name: 'authorizationRules';
+            type: {
+              option: 'publicKey';
+            };
+          }
+        ];
+      };
+    },
+    {
       name: 'PrizeType';
       type: {
         kind: 'enum';
@@ -1059,8 +1133,7 @@ export type Raffles = {
             name: 'Token';
             fields: [
               {
-                name: 'mint';
-                type: 'publicKey';
+                defined: 'TokenPrizeInfo';
               }
             ];
           },
@@ -1068,8 +1141,7 @@ export type Raffles = {
             name: 'Compressed';
             fields: [
               {
-                name: 'merkle_tree';
-                type: 'publicKey';
+                defined: 'CompressedPrizeInfo';
               }
             ];
           },
@@ -1077,16 +1149,7 @@ export type Raffles = {
             name: 'Legacy';
             fields: [
               {
-                name: 'mint';
-                type: 'publicKey';
-              },
-              {
-                name: 'metadata';
-                type: 'publicKey';
-              },
-              {
-                name: 'edition';
-                type: 'publicKey';
+                defined: 'LegacyPrizeInfo';
               }
             ];
           },
@@ -1094,26 +1157,7 @@ export type Raffles = {
             name: 'Programmable';
             fields: [
               {
-                name: 'mint';
-                type: 'publicKey';
-              },
-              {
-                name: 'metadata';
-                type: 'publicKey';
-              },
-              {
-                name: 'edition';
-                type: 'publicKey';
-              },
-              {
-                name: 'token_record';
-                type: 'publicKey';
-              },
-              {
-                name: 'authorization_rules';
-                type: {
-                  option: 'publicKey';
-                };
+                defined: 'ProgrammablePrizeInfo';
               }
             ];
           }
@@ -1310,151 +1354,156 @@ export type Raffles = {
     },
     {
       code: 6010;
+      name: 'InvalidTicketAmount';
+      msg: 'Invalid ticket amount. Must not be greater than 20.';
+    },
+    {
+      code: 6011;
       name: 'TokenAccountNotOwnedByWinner';
       msg: 'Ticket account not owned by winner';
     },
     {
-      code: 6011;
+      code: 6012;
       name: 'TicketHasNotWon';
       msg: 'Ticket has not won';
     },
     {
-      code: 6012;
+      code: 6013;
       name: 'UnclaimedPrizes';
       msg: 'Unclaimed prizes';
     },
     {
-      code: 6013;
+      code: 6014;
       name: 'InvalidRecentBlockhashes';
       msg: 'Invalid recent blockhashes';
     },
     {
-      code: 6014;
+      code: 6015;
       name: 'OnlyCreatorCanClaimNoEntrantRafflePrizes';
       msg: 'Only the creator can calin no entrant raffle prizes';
     },
     {
-      code: 6015;
+      code: 6016;
       name: 'InvalidTreasuryTokenAccountOwner';
       msg: 'Invalid treasury token account owner';
     },
     {
-      code: 6016;
+      code: 6017;
       name: 'PrizeMintNotProvided';
       msg: 'The prize token mint account was not provided';
     },
     {
-      code: 6017;
+      code: 6018;
       name: 'PrizeTokenAccountNotProvided';
       msg: 'The prize token account was not provided';
     },
     {
-      code: 6018;
+      code: 6019;
       name: 'SourceTokenAccountNotProvided';
       msg: 'The source token account was not provided';
     },
     {
-      code: 6019;
+      code: 6020;
       name: 'PrizeEditionNotProvided';
       msg: 'The prize edition account was not provided';
     },
     {
-      code: 6020;
+      code: 6021;
       name: 'PrizeMetadataNotProvided';
       msg: 'The prize metadata account was not provided';
     },
     {
-      code: 6021;
+      code: 6022;
       name: 'PrizeTokenRecordNotProvided';
       msg: 'The prize token record account was not provided';
     },
     {
-      code: 6022;
+      code: 6023;
       name: 'SourceTokenRecordNotProvided';
       msg: 'The source token record account was not provided';
     },
     {
-      code: 6023;
+      code: 6024;
       name: 'TokenProgramNotProvided';
       msg: 'The token program account was not provided';
     },
     {
-      code: 6024;
+      code: 6025;
       name: 'AssociatedTokenProgramNotProvided';
       msg: 'The associated token program account was not provided';
     },
     {
-      code: 6025;
+      code: 6026;
       name: 'MetadataProgramNotProvided';
       msg: 'The metadata program account was not provided';
     },
     {
-      code: 6026;
+      code: 6027;
       name: 'AuthorizationRulesProgramNotProvided';
       msg: 'The authorization rules program account was not provided';
     },
     {
-      code: 6027;
+      code: 6028;
       name: 'AuthorizationRuleNotProvided';
       msg: 'The authorization rule set account was not provided';
     },
     {
-      code: 6028;
+      code: 6029;
       name: 'InstructionsSysvarNotProvided';
       msg: 'The instructions sysvar account was not provided';
     },
     {
-      code: 6029;
+      code: 6030;
       name: 'WinnerTokenAccountNotProvided';
       msg: 'The winner token account was not provided';
     },
     {
-      code: 6030;
+      code: 6031;
       name: 'WinnerTokenRecordNotProvided';
       msg: 'The winner token record account was not provided';
     },
     {
-      code: 6031;
+      code: 6032;
       name: 'BubblegumProgramNotProvided';
       msg: 'The bubblegum program account was not provided';
     },
     {
-      code: 6032;
+      code: 6033;
       name: 'AccountCompressionProgramNotProvided';
       msg: 'The account compression program account was not provided';
     },
     {
-      code: 6033;
+      code: 6034;
       name: 'NoopProgramNotProvided';
       msg: 'The noop program account was not provided';
     },
     {
-      code: 6034;
+      code: 6035;
       name: 'PrizeMerkleTreeNotProvided';
       msg: 'The prize merkle tree account was not provided';
     },
     {
-      code: 6035;
+      code: 6036;
       name: 'PrizeMerkleTreeAuthorityNotProvided';
       msg: 'The prize merkle tree authority account was not provided';
     },
     {
-      code: 6036;
+      code: 6037;
       name: 'PrizeLeafOwnerNotProvided';
       msg: 'The prize leaf owner account was not provided';
     },
     {
-      code: 6037;
+      code: 6038;
       name: 'PrizeLeafDelegateNotProvided';
       msg: 'The prize leaf owner account was not provided';
     },
     {
-      code: 6038;
+      code: 6039;
       name: 'MerkleProofNotProvided';
       msg: 'The merkle proof was not provided';
     },
     {
-      code: 6039;
+      code: 6040;
       name: 'CompressedArgsNotProvided';
       msg: 'The compressed args were not provided';
     }
@@ -2489,6 +2538,80 @@ export const IDL: Raffles = {
       }
     },
     {
+      name: 'TokenPrizeInfo',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'mint',
+            type: 'publicKey'
+          }
+        ]
+      }
+    },
+    {
+      name: 'CompressedPrizeInfo',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'merkleTree',
+            type: 'publicKey'
+          }
+        ]
+      }
+    },
+    {
+      name: 'LegacyPrizeInfo',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'mint',
+            type: 'publicKey'
+          },
+          {
+            name: 'metadata',
+            type: 'publicKey'
+          },
+          {
+            name: 'edition',
+            type: 'publicKey'
+          }
+        ]
+      }
+    },
+    {
+      name: 'ProgrammablePrizeInfo',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'mint',
+            type: 'publicKey'
+          },
+          {
+            name: 'metadata',
+            type: 'publicKey'
+          },
+          {
+            name: 'edition',
+            type: 'publicKey'
+          },
+          {
+            name: 'tokenRecord',
+            type: 'publicKey'
+          },
+          {
+            name: 'authorizationRules',
+            type: {
+              option: 'publicKey'
+            }
+          }
+        ]
+      }
+    },
+    {
       name: 'PrizeType',
       type: {
         kind: 'enum',
@@ -2522,8 +2645,7 @@ export const IDL: Raffles = {
             name: 'Token',
             fields: [
               {
-                name: 'mint',
-                type: 'publicKey'
+                defined: 'TokenPrizeInfo'
               }
             ]
           },
@@ -2531,8 +2653,7 @@ export const IDL: Raffles = {
             name: 'Compressed',
             fields: [
               {
-                name: 'merkle_tree',
-                type: 'publicKey'
+                defined: 'CompressedPrizeInfo'
               }
             ]
           },
@@ -2540,16 +2661,7 @@ export const IDL: Raffles = {
             name: 'Legacy',
             fields: [
               {
-                name: 'mint',
-                type: 'publicKey'
-              },
-              {
-                name: 'metadata',
-                type: 'publicKey'
-              },
-              {
-                name: 'edition',
-                type: 'publicKey'
+                defined: 'LegacyPrizeInfo'
               }
             ]
           },
@@ -2557,26 +2669,7 @@ export const IDL: Raffles = {
             name: 'Programmable',
             fields: [
               {
-                name: 'mint',
-                type: 'publicKey'
-              },
-              {
-                name: 'metadata',
-                type: 'publicKey'
-              },
-              {
-                name: 'edition',
-                type: 'publicKey'
-              },
-              {
-                name: 'token_record',
-                type: 'publicKey'
-              },
-              {
-                name: 'authorization_rules',
-                type: {
-                  option: 'publicKey'
-                }
+                defined: 'ProgrammablePrizeInfo'
               }
             ]
           }
@@ -2773,151 +2866,156 @@ export const IDL: Raffles = {
     },
     {
       code: 6010,
+      name: 'InvalidTicketAmount',
+      msg: 'Invalid ticket amount. Must not be greater than 20.'
+    },
+    {
+      code: 6011,
       name: 'TokenAccountNotOwnedByWinner',
       msg: 'Ticket account not owned by winner'
     },
     {
-      code: 6011,
+      code: 6012,
       name: 'TicketHasNotWon',
       msg: 'Ticket has not won'
     },
     {
-      code: 6012,
+      code: 6013,
       name: 'UnclaimedPrizes',
       msg: 'Unclaimed prizes'
     },
     {
-      code: 6013,
+      code: 6014,
       name: 'InvalidRecentBlockhashes',
       msg: 'Invalid recent blockhashes'
     },
     {
-      code: 6014,
+      code: 6015,
       name: 'OnlyCreatorCanClaimNoEntrantRafflePrizes',
       msg: 'Only the creator can calin no entrant raffle prizes'
     },
     {
-      code: 6015,
+      code: 6016,
       name: 'InvalidTreasuryTokenAccountOwner',
       msg: 'Invalid treasury token account owner'
     },
     {
-      code: 6016,
+      code: 6017,
       name: 'PrizeMintNotProvided',
       msg: 'The prize token mint account was not provided'
     },
     {
-      code: 6017,
+      code: 6018,
       name: 'PrizeTokenAccountNotProvided',
       msg: 'The prize token account was not provided'
     },
     {
-      code: 6018,
+      code: 6019,
       name: 'SourceTokenAccountNotProvided',
       msg: 'The source token account was not provided'
     },
     {
-      code: 6019,
+      code: 6020,
       name: 'PrizeEditionNotProvided',
       msg: 'The prize edition account was not provided'
     },
     {
-      code: 6020,
+      code: 6021,
       name: 'PrizeMetadataNotProvided',
       msg: 'The prize metadata account was not provided'
     },
     {
-      code: 6021,
+      code: 6022,
       name: 'PrizeTokenRecordNotProvided',
       msg: 'The prize token record account was not provided'
     },
     {
-      code: 6022,
+      code: 6023,
       name: 'SourceTokenRecordNotProvided',
       msg: 'The source token record account was not provided'
     },
     {
-      code: 6023,
+      code: 6024,
       name: 'TokenProgramNotProvided',
       msg: 'The token program account was not provided'
     },
     {
-      code: 6024,
+      code: 6025,
       name: 'AssociatedTokenProgramNotProvided',
       msg: 'The associated token program account was not provided'
     },
     {
-      code: 6025,
+      code: 6026,
       name: 'MetadataProgramNotProvided',
       msg: 'The metadata program account was not provided'
     },
     {
-      code: 6026,
+      code: 6027,
       name: 'AuthorizationRulesProgramNotProvided',
       msg: 'The authorization rules program account was not provided'
     },
     {
-      code: 6027,
+      code: 6028,
       name: 'AuthorizationRuleNotProvided',
       msg: 'The authorization rule set account was not provided'
     },
     {
-      code: 6028,
+      code: 6029,
       name: 'InstructionsSysvarNotProvided',
       msg: 'The instructions sysvar account was not provided'
     },
     {
-      code: 6029,
+      code: 6030,
       name: 'WinnerTokenAccountNotProvided',
       msg: 'The winner token account was not provided'
     },
     {
-      code: 6030,
+      code: 6031,
       name: 'WinnerTokenRecordNotProvided',
       msg: 'The winner token record account was not provided'
     },
     {
-      code: 6031,
+      code: 6032,
       name: 'BubblegumProgramNotProvided',
       msg: 'The bubblegum program account was not provided'
     },
     {
-      code: 6032,
+      code: 6033,
       name: 'AccountCompressionProgramNotProvided',
       msg: 'The account compression program account was not provided'
     },
     {
-      code: 6033,
+      code: 6034,
       name: 'NoopProgramNotProvided',
       msg: 'The noop program account was not provided'
     },
     {
-      code: 6034,
+      code: 6035,
       name: 'PrizeMerkleTreeNotProvided',
       msg: 'The prize merkle tree account was not provided'
     },
     {
-      code: 6035,
+      code: 6036,
       name: 'PrizeMerkleTreeAuthorityNotProvided',
       msg: 'The prize merkle tree authority account was not provided'
     },
     {
-      code: 6036,
+      code: 6037,
       name: 'PrizeLeafOwnerNotProvided',
       msg: 'The prize leaf owner account was not provided'
     },
     {
-      code: 6037,
+      code: 6038,
       name: 'PrizeLeafDelegateNotProvided',
       msg: 'The prize leaf owner account was not provided'
     },
     {
-      code: 6038,
+      code: 6039,
       name: 'MerkleProofNotProvided',
       msg: 'The merkle proof was not provided'
     },
     {
-      code: 6039,
+      code: 6040,
       name: 'CompressedArgsNotProvided',
       msg: 'The compressed args were not provided'
     }
