@@ -19,6 +19,14 @@ impl std::fmt::Debug for RaffleCreated {
     }
 }
 
+impl std::fmt::Debug for RaffleClosed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RaffleClosed")
+            .field("raffle", &self.raffle)
+            .field("creator", &self.creator)
+            .finish()
+    }
+}
 impl std::fmt::Debug for TicketBought {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TicketsBought")
