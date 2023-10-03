@@ -44,7 +44,10 @@ impl std::fmt::Debug for PrizeAdded {
             .field("prize", &self.prize)
             .field("prize_index", &self.prize_index)
             .field("amount", &self.amount)
-            .field("prize_info", &self.prize_info)
+            .field("mint", &self.mint)
+            .field("metadata", &self.metadata)
+            .field("token_record", &self.token_record)
+            .field("merkle_tree", &self.merkle_tree)
             .finish()
     }
 }
