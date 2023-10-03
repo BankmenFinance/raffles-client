@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { RafflesClient } from '@raffles/client/raffles';
-import { Cluster } from '@raffles/types';
-import { Raffle } from '@raffles/accounts';
+import { RafflesClient } from '@bankmenfi/raffles-client/client';
+import { Cluster } from '@bankmenfi/raffles-client/types';
+import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
+import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -9,14 +10,16 @@ require('dotenv').config({
 });
 
 // Constants
-const CLUSTER = process.env.CLUSTER as Cluster;
+const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
+const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 
 export const main = async () => {
-  console.log('Running testLoadRaffles. ' + CLUSTER);
+  console.log(`Running testLoadRaffles. Cluster: ${CLUSTER}`);
+  console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
-  const rafflesClient = new RafflesClient(CLUSTER);
+  const rafflesClient = new RafflesClient(CLUSTER, RPC_ENDPOINT);
 
-  const raffles = await Raffle.loadAll(rafflesClient);
+  const raffles = await RaffleAccount.loadAll(rafflesClient.program);
 
   const currentTimestamp = Math.floor(Date.now() / 1000);
 

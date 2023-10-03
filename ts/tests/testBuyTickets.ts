@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { RafflesClient } from '../src/client/raffles';
+import { RafflesClient } from '@bankmenfi/raffles-client/client/';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
-import { Cluster } from '@raffles/types';
+import { Cluster } from '@bankmenfi/raffles-client/types';
 import { loadWallet } from 'utils';
-import { Raffle } from '@raffles/accounts';
+import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
 import {
   PublicKey,
   Transaction,
@@ -11,6 +11,7 @@ import {
   Keypair
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token';
+import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 import {
   createInitializeAccountInstruction,
   createCloseAccountInstruction
@@ -22,23 +23,29 @@ require('dotenv').config({
 });
 
 // Constants
-const CLUSTER = process.env.CLUSTER as Cluster;
+const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
+const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const WSOL_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 
-const TICKETS = 2;
+const TICKETS = 10;
 
 export const main = async () => {
-  console.log('Running testbuyTickets.');
+  console.log(`Running testBuyTickets. Cluster: ${CLUSTER}`);
+  console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);
   console.log('Wallet Public Key: ' + wallet.publicKey.toString());
 
-  const rafflesClient = new RafflesClient(CLUSTER, new NodeWallet(wallet));
+  const rafflesClient = new RafflesClient(
+    CLUSTER,
+    RPC_ENDPOINT,
+    new NodeWallet(wallet)
+  );
 
-  const raffle = await Raffle.load(
-    rafflesClient,
+  const raffle = await RaffleAccount.load(
+    rafflesClient.program,
     new PublicKey('BXM6qXcemJyPRzMGMtgGgbJUEfVP5wANAJqe7VWsbGoU')
   );
 
@@ -70,12 +77,7 @@ export const main = async () => {
     );
   }
 
-  const { ixs } = await raffle.buyTickets(
-    TICKETS,
-    raffle.state.proceedsMint.equals(WSOL_MINT)
-      ? wrappedSolTokenAccount.publicKey
-      : null
-  );
+  const { ixs } = await raffle.buyTickets(TICKETS);
 
   for (const ix of ixs) {
     tx.add(ix);
@@ -98,7 +100,7 @@ export const main = async () => {
     allSigners.push(signer);
   }
 
-  const signature = await rafflesClient.sendAndConfirm(tx, allSigners);
+  const signature = await rafflesClient.program.sendAndConfirm(tx, allSigners);
   console.log('Transaction signature: ' + signature);
 };
 

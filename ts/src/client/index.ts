@@ -1,8 +1,9 @@
 import { RafflesApiClient } from './api';
 import { RafflesProgramClient } from './program';
-import { AnchorProvider } from '@coral-xyz/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { AnchorProvider, Provider } from '@coral-xyz/anchor';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { Wallet, Cluster } from '../types/index';
+import { Metaplex } from '@metaplex-foundation/js';
 
 export * from './program';
 export * from './api';
@@ -14,16 +15,14 @@ export class RafflesClient {
   constructor(
     cluster: Cluster,
     rpcEndpoint?: string,
-    apiEndpoint?: string,
     wallet?: Wallet,
-    programId?: PublicKey,
+    apiEndpoint?: string,
     confirmOpts = AnchorProvider.defaultOptions()
   ) {
     this.programClient = new RafflesProgramClient(
       cluster,
       rpcEndpoint,
       wallet,
-      programId,
       confirmOpts
     );
     if (apiEndpoint) {
@@ -37,5 +36,21 @@ export class RafflesClient {
 
   get program(): RafflesProgramClient {
     return this.programClient;
+  }
+
+  get metaplex(): Metaplex {
+    return this.program.metaplex;
+  }
+
+  get connection(): Connection {
+    return this.program.connection;
+  }
+
+  get provider(): Provider {
+    return this.program.anchorProvider;
+  }
+
+  get walletPubkey(): PublicKey {
+    return this.program.walletPubkey;
   }
 }

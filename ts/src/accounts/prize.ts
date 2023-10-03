@@ -1,9 +1,11 @@
 import {
   AccountMeta,
+  Keypair,
   PublicKey,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction
 } from '@solana/web3.js';
 import { RafflesProgramClient } from '../client';
 import { PrizeState } from '../types/on-chain';
@@ -110,7 +112,11 @@ export class PrizeAccount {
     asset?: Sft | SftWithToken | Nft | NftWithToken,
     merkleTree?: ConcurrentMerkleTreeAccount,
     assetProof?: GetAssetProofRpcResponse
-  ) {
+  ): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
     const compressedArgs =
       merkleTree && assetProof
         ? {

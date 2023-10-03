@@ -1,4 +1,9 @@
-import { PublicKey, SystemProgram } from '@solana/web3.js';
+import {
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction
+} from '@solana/web3.js';
 import { RafflesProgramClient } from '../client';
 import { ConfigState, InitializeArgs } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
@@ -27,7 +32,14 @@ export class ConfigAccount {
    * @param maxEntrants The maximum number of entrants in this raffle.
    * @returns The accounts, instructions and signers, if necessary.
    */
-  static async initialize(client: RafflesProgramClient, args: InitializeArgs) {
+  static async initialize(
+    client: RafflesProgramClient,
+    args: InitializeArgs
+  ): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
     const [config] = deriveConfigAddress(client.programId);
     const [rafflesProgramData] = PublicKey.findProgramAddressSync(
       [client.programId.toBuffer()],
@@ -47,7 +59,7 @@ export class ConfigAccount {
       .instruction();
 
     return {
-      accounts: [],
+      accounts: [config],
       ixs: [ix],
       signers: []
     };

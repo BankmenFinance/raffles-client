@@ -11,7 +11,6 @@ export type CompressedArgs = TypeDef<Raffles['types'][0], Raffles>;
 export type AddPrizeArgs = TypeDef<Raffles['types'][1], Raffles>;
 export type InitializeArgs = TypeDef<Raffles['types'][2], Raffles>;
 export type PrizeType = TypeDef<Raffles['types'][3], Raffles>;
-export type PrizeInfo = TypeDef<Raffles['types'][4], Raffles>;
 
 export type RaffleCreated = Event<Raffles['events'][0], Raffles>;
 export type PrizeAdded = Event<Raffles['events'][1], Raffles>;

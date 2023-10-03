@@ -27,6 +27,7 @@ import {
   SftWithToken
 } from '@metaplex-foundation/js';
 import { MPL_TOKEN_AUTH_RULES_PROGRAM_ID } from '@metaplex-foundation/mpl-token-auth-rules';
+import { TransactionInstruction } from '@solana/web3.js';
 import {
   MPL_TOKEN_METADATA_PROGRAM_ID,
   TokenStandard
@@ -66,7 +67,11 @@ export class RaffleAccount {
     endTimestamp: BN,
     ticketPrice: BN,
     maxEntrants: number
-  ) {
+  ): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
     const entrants = new Keypair();
     const [raffle, raffleBump] = deriveRaffleAddress(
       entrants.publicKey,
@@ -86,12 +91,12 @@ export class RaffleAccount {
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
-        associatedTokenProgram: ''
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
       })
       .instruction();
 
     return {
-      accounts: [raffle, entrants, proceeds],
+      accounts: [raffle, entrants.publicKey, proceeds],
       ixs: [ix],
       signers: [entrants]
     };
@@ -159,7 +164,11 @@ export class RaffleAccount {
     asset?: Sft | SftWithToken | Nft | NftWithToken,
     merkleTree?: ConcurrentMerkleTreeAccount,
     assetProof?: GetAssetProofRpcResponse
-  ) {
+  ): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
     if ((asset && merkleTree) || (asset && assetProof)) {
       throw new Error(
         'Invalid arguments. `asset` and `merkleTree` cannot be passed at the same time.'
@@ -330,7 +339,7 @@ export class RaffleAccount {
     }
 
     return {
-      accounts: [],
+      accounts: [prize],
       ixs: [ix],
       signers: []
     };
@@ -341,7 +350,11 @@ export class RaffleAccount {
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve a Raffle.
    */
-  async buyTickets(amount: number) {
+  async buyTickets(amount: number): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
     const [config] = deriveConfigAddress(this.client.programId);
     const proceeds = await getAssociatedTokenAddress(
       this.address,

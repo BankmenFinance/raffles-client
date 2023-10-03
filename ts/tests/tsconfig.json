@@ -11,8 +11,8 @@
       "skipLibCheck": true,
       "baseUrl": ".",
       "paths": {
-        "@raffles": ["../src/index.ts"],
-        "@raffles/*": ["../src/*"]
+        "@bankmenfi/raffles-client": ["../src/index.ts"],
+        "@bankmenfi/raffles-client/*": ["../src/*"]
       }
     },
     "include": ["**/*"],

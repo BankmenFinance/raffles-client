@@ -10,3 +10,7 @@ export const loadWallet = (KP_PATH: string): Keypair => {
     throw e;
   }
 };
+
+export const delay = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

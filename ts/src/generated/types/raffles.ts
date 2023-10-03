@@ -922,11 +922,58 @@ export type Raffles = {
             type: 'publicKey';
           },
           {
-            name: 'info';
-            docs: ['Information about the type of prize.'];
-            type: {
-              defined: 'PrizeInfo';
-            };
+            name: 'mint';
+            docs: [
+              'The SPL Token Mint of the Token, Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a Compressed NFT.'
+            ];
+            type: 'publicKey';
+          },
+          {
+            name: 'metadata';
+            docs: [
+              'The Metadata Account of the Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token or Compressed NFT.'
+            ];
+            type: 'publicKey';
+          },
+          {
+            name: 'edition';
+            docs: [
+              'The Edition Account of the Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token or Compressed NFT.'
+            ];
+            type: 'publicKey';
+          },
+          {
+            name: 'tokenRecord';
+            docs: [
+              'The Token Record Account of the Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be an SPL Token, Legacy or Compressed NFT.'
+            ];
+            type: 'publicKey';
+          },
+          {
+            name: 'authorizationRules';
+            docs: [
+              'The Authorization Rule Set Account of the Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be an SPL Token, Legacy or Compressed NFT.'
+            ];
+            type: 'publicKey';
+          },
+          {
+            name: 'merkleTree';
+            docs: [
+              'The Merkle Tree of the Compressed NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token, Legacy or Programmable NFT.'
+            ];
+            type: 'publicKey';
           }
         ];
       };
@@ -1026,80 +1073,6 @@ export type Raffles = {
       };
     },
     {
-      name: 'TokenPrizeInfo';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'mint';
-            type: 'publicKey';
-          }
-        ];
-      };
-    },
-    {
-      name: 'CompressedPrizeInfo';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'merkleTree';
-            type: 'publicKey';
-          }
-        ];
-      };
-    },
-    {
-      name: 'LegacyPrizeInfo';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'mint';
-            type: 'publicKey';
-          },
-          {
-            name: 'metadata';
-            type: 'publicKey';
-          },
-          {
-            name: 'edition';
-            type: 'publicKey';
-          }
-        ];
-      };
-    },
-    {
-      name: 'ProgrammablePrizeInfo';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'mint';
-            type: 'publicKey';
-          },
-          {
-            name: 'metadata';
-            type: 'publicKey';
-          },
-          {
-            name: 'edition';
-            type: 'publicKey';
-          },
-          {
-            name: 'tokenRecord';
-            type: 'publicKey';
-          },
-          {
-            name: 'authorizationRules';
-            type: {
-              option: 'publicKey';
-            };
-          }
-        ];
-      };
-    },
-    {
       name: 'PrizeType';
       type: {
         kind: 'enum';
@@ -1123,46 +1096,6 @@ export type Raffles = {
           }
         ];
       };
-    },
-    {
-      name: 'PrizeInfo';
-      type: {
-        kind: 'enum';
-        variants: [
-          {
-            name: 'Token';
-            fields: [
-              {
-                defined: 'TokenPrizeInfo';
-              }
-            ];
-          },
-          {
-            name: 'Compressed';
-            fields: [
-              {
-                defined: 'CompressedPrizeInfo';
-              }
-            ];
-          },
-          {
-            name: 'Legacy';
-            fields: [
-              {
-                defined: 'LegacyPrizeInfo';
-              }
-            ];
-          },
-          {
-            name: 'Programmable';
-            fields: [
-              {
-                defined: 'ProgrammablePrizeInfo';
-              }
-            ];
-          }
-        ];
-      };
     }
   ];
   events: [
@@ -1180,6 +1113,11 @@ export type Raffles = {
           index: false;
         },
         {
+          name: 'proceedsMint';
+          type: 'publicKey';
+          index: false;
+        },
+        {
           name: 'endTimestamp';
           type: 'i64';
           index: false;
@@ -1192,6 +1130,21 @@ export type Raffles = {
         {
           name: 'maxEntrants';
           type: 'u32';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'RaffleClosed';
+      fields: [
+        {
+          name: 'raffle';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'creator';
+          type: 'publicKey';
           index: false;
         }
       ];
@@ -1220,10 +1173,23 @@ export type Raffles = {
           index: false;
         },
         {
-          name: 'prizeInfo';
-          type: {
-            defined: 'PrizeInfo';
-          };
+          name: 'mint';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'metadata';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'tokenRecord';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'merkleTree';
+          type: 'publicKey';
           index: false;
         }
       ];
@@ -2434,11 +2400,58 @@ export const IDL: Raffles = {
             type: 'publicKey'
           },
           {
-            name: 'info',
-            docs: ['Information about the type of prize.'],
-            type: {
-              defined: 'PrizeInfo'
-            }
+            name: 'mint',
+            docs: [
+              'The SPL Token Mint of the Token, Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a Compressed NFT.'
+            ],
+            type: 'publicKey'
+          },
+          {
+            name: 'metadata',
+            docs: [
+              'The Metadata Account of the Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token or Compressed NFT.'
+            ],
+            type: 'publicKey'
+          },
+          {
+            name: 'edition',
+            docs: [
+              'The Edition Account of the Legacy or Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token or Compressed NFT.'
+            ],
+            type: 'publicKey'
+          },
+          {
+            name: 'tokenRecord',
+            docs: [
+              'The Token Record Account of the Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be an SPL Token, Legacy or Compressed NFT.'
+            ],
+            type: 'publicKey'
+          },
+          {
+            name: 'authorizationRules',
+            docs: [
+              'The Authorization Rule Set Account of the Programmable NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be an SPL Token, Legacy or Compressed NFT.'
+            ],
+            type: 'publicKey'
+          },
+          {
+            name: 'merkleTree',
+            docs: [
+              'The Merkle Tree of the Compressed NFT Prize.',
+              '',
+              'If this value is set, the Prize CANNOT be a SPL Token, Legacy or Programmable NFT.'
+            ],
+            type: 'publicKey'
           }
         ]
       }
@@ -2538,80 +2551,6 @@ export const IDL: Raffles = {
       }
     },
     {
-      name: 'TokenPrizeInfo',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'mint',
-            type: 'publicKey'
-          }
-        ]
-      }
-    },
-    {
-      name: 'CompressedPrizeInfo',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'merkleTree',
-            type: 'publicKey'
-          }
-        ]
-      }
-    },
-    {
-      name: 'LegacyPrizeInfo',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'mint',
-            type: 'publicKey'
-          },
-          {
-            name: 'metadata',
-            type: 'publicKey'
-          },
-          {
-            name: 'edition',
-            type: 'publicKey'
-          }
-        ]
-      }
-    },
-    {
-      name: 'ProgrammablePrizeInfo',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'mint',
-            type: 'publicKey'
-          },
-          {
-            name: 'metadata',
-            type: 'publicKey'
-          },
-          {
-            name: 'edition',
-            type: 'publicKey'
-          },
-          {
-            name: 'tokenRecord',
-            type: 'publicKey'
-          },
-          {
-            name: 'authorizationRules',
-            type: {
-              option: 'publicKey'
-            }
-          }
-        ]
-      }
-    },
-    {
       name: 'PrizeType',
       type: {
         kind: 'enum',
@@ -2635,46 +2574,6 @@ export const IDL: Raffles = {
           }
         ]
       }
-    },
-    {
-      name: 'PrizeInfo',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'Token',
-            fields: [
-              {
-                defined: 'TokenPrizeInfo'
-              }
-            ]
-          },
-          {
-            name: 'Compressed',
-            fields: [
-              {
-                defined: 'CompressedPrizeInfo'
-              }
-            ]
-          },
-          {
-            name: 'Legacy',
-            fields: [
-              {
-                defined: 'LegacyPrizeInfo'
-              }
-            ]
-          },
-          {
-            name: 'Programmable',
-            fields: [
-              {
-                defined: 'ProgrammablePrizeInfo'
-              }
-            ]
-          }
-        ]
-      }
     }
   ],
   events: [
@@ -2692,6 +2591,11 @@ export const IDL: Raffles = {
           index: false
         },
         {
+          name: 'proceedsMint',
+          type: 'publicKey',
+          index: false
+        },
+        {
           name: 'endTimestamp',
           type: 'i64',
           index: false
@@ -2704,6 +2608,21 @@ export const IDL: Raffles = {
         {
           name: 'maxEntrants',
           type: 'u32',
+          index: false
+        }
+      ]
+    },
+    {
+      name: 'RaffleClosed',
+      fields: [
+        {
+          name: 'raffle',
+          type: 'publicKey',
+          index: false
+        },
+        {
+          name: 'creator',
+          type: 'publicKey',
           index: false
         }
       ]
@@ -2732,10 +2651,23 @@ export const IDL: Raffles = {
           index: false
         },
         {
-          name: 'prizeInfo',
-          type: {
-            defined: 'PrizeInfo'
-          },
+          name: 'mint',
+          type: 'publicKey',
+          index: false
+        },
+        {
+          name: 'metadata',
+          type: 'publicKey',
+          index: false
+        },
+        {
+          name: 'tokenRecord',
+          type: 'publicKey',
+          index: false
+        },
+        {
+          name: 'merkleTree',
+          type: 'publicKey',
           index: false
         }
       ]

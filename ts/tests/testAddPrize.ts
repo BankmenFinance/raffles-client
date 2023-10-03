@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { RafflesClient } from '../src/client/raffles';
+import { RafflesClient } from '@bankmenfi/raffles-client/client';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
-import { Cluster } from '@raffles/types';
+import { Cluster } from '@bankmenfi/raffles-client/types';
 import { loadWallet } from 'utils';
-import { Raffle } from '@raffles/accounts';
+import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
 import {
@@ -14,6 +15,7 @@ import {
   SftWithToken
 } from '@metaplex-foundation/js';
 import { ConcurrentMerkleTreeAccount } from '@solana/spl-account-compression';
+import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -21,7 +23,8 @@ require('dotenv').config({
 });
 
 // Constants
-const CLUSTER = process.env.CLUSTER as Cluster;
+const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
+const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const PRIZE_MINT = new PublicKey(
@@ -29,28 +32,28 @@ const PRIZE_MINT = new PublicKey(
 );
 
 const createAddProgrammableNftPrizeTx = async (
-  raffle: Raffle,
+  raffle: RaffleAccount,
   asset: Sft | SftWithToken | Nft | NftWithToken
 ) => {
   return await raffle.addPrize(new BN(1), { programmable: {} }, asset);
 };
 
 const createAddTokenPrizeTx = async (
-  raffle: Raffle,
+  raffle: RaffleAccount,
   asset: Sft | SftWithToken | Nft | NftWithToken
 ) => {
   return await raffle.addPrize(new BN(1), { token: {} }, asset);
 };
 
 const createAddLegacyNftPrizeTx = async (
-  raffle: Raffle,
+  raffle: RaffleAccount,
   asset: Sft | SftWithToken | Nft | NftWithToken
 ) => {
   return await raffle.addPrize(new BN(1), { legacy: {} }, asset);
 };
 
 const createAddCompressedNftPrizeTx = async (
-  raffle: Raffle,
+  raffle: RaffleAccount,
   asset: Sft | SftWithToken | Nft | NftWithToken,
   merkleTree: ConcurrentMerkleTreeAccount,
   assetProof: GetAssetProofRpcResponse
@@ -65,15 +68,20 @@ const createAddCompressedNftPrizeTx = async (
 };
 
 export const main = async () => {
-  console.log('Running testCreateRaffle.');
+  console.log(`Running testAddPrize. Cluster: ${CLUSTER}`);
+  console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);
   console.log('Wallet Public Key: ' + wallet.publicKey.toString());
 
-  const rafflesClient = new RafflesClient(CLUSTER, new NodeWallet(wallet));
+  const rafflesClient = new RafflesClient(
+    CLUSTER,
+    RPC_ENDPOINT,
+    new NodeWallet(wallet)
+  );
 
-  const raffle = await Raffle.load(
-    rafflesClient,
+  const raffle = await RaffleAccount.load(
+    rafflesClient.program,
     new PublicKey('BXM6qXcemJyPRzMGMtgGgbJUEfVP5wANAJqe7VWsbGoU')
   );
 
@@ -90,8 +98,13 @@ export const main = async () => {
     tx.add(ix);
   }
 
-  const signature = await rafflesClient.sendAndConfirm(tx, [wallet]);
-  console.log('Transaction signature: ' + signature);
+  const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
+
+  console.log(`       Success!🎉`);
+  console.log(`       ✅ - Added Prize to Raffle ${raffle.address}.`);
+  console.log(
+    `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+  );
 };
 
 main();

@@ -30,21 +30,20 @@ export class RafflesProgramClient {
     readonly cluster: Cluster,
     rpcEndpoint?: string,
     wallet?: Wallet,
-    programId?: PublicKey,
     confirmOpts = AnchorProvider.defaultOptions()
   ) {
     if (wallet) {
-      this.connectWallet(wallet, confirmOpts);
+      this.connectWallet(wallet, rpcEndpoint, confirmOpts);
     } else {
       const provider = {
         connection: new Connection(
-          rpcEndpoint ? rpcEndpoint : CONFIGS[cluster].RPC_ENDPOINT,
+          rpcEndpoint ? rpcEndpoint : CONFIGS[this.cluster].RPC_ENDPOINT,
           confirmOpts.commitment
         )
       };
       this._program = new Program<Raffles>(
         rafflesIdl as Raffles,
-        programId ? programId : CONFIGS[this.cluster].PROGRAM_ID,
+        CONFIGS[this.cluster].PROGRAM_ID,
         provider
       );
     }
@@ -52,8 +51,19 @@ export class RafflesProgramClient {
     this.metaplex = Metaplex.make(this.connection);
   }
 
-  connectWallet(wallet: Wallet, confirmOpts = AnchorProvider.defaultOptions()) {
-    const provider = new AnchorProvider(this.connection, wallet, confirmOpts);
+  connectWallet(
+    wallet: Wallet,
+    rpcEndpoint?: string,
+    confirmOpts = AnchorProvider.defaultOptions()
+  ) {
+    const provider = new AnchorProvider(
+      new Connection(
+        rpcEndpoint ? rpcEndpoint : CONFIGS[this.cluster].RPC_ENDPOINT,
+        confirmOpts.commitment
+      ),
+      wallet,
+      confirmOpts
+    );
     this._program = new Program<Raffles>(
       rafflesIdl as Raffles,
       CONFIGS[this.cluster].PROGRAM_ID,
@@ -66,7 +76,7 @@ export class RafflesProgramClient {
   }
 
   get anchorProvider(): AnchorProvider {
-    const provider = this._program.provider as AnchorProvider;
+    const provider = this._provider as AnchorProvider;
     if (provider.wallet) {
       return provider;
     }
