@@ -3,9 +3,9 @@ use anchor_lang::prelude::*;
 anchor_gen::generate_cpi_interface!(idl_path = "idl.json");
 
 #[cfg(feature = "mainnet-beta")]
-declare_id!("C51NyFn3yu3zfTwswacr1XZsxHoeFW3vDM7Jg9T9em2N");
+declare_id!("8H35HKgE2YXbvV1aoU4954jnTuMm88yjGRt1giUgxpwu");
 #[cfg(not(feature = "mainnet-beta"))]
-declare_id!("C51NyFn3yu3zfTwswacr1XZsxHoeFW3vDM7Jg9T9em2N");
+declare_id!("8H35HKgE2YXbvV1aoU4954jnTuMm88yjGRt1giUgxpwu");
 
 impl std::fmt::Debug for RaffleCreated {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
