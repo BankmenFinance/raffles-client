@@ -22,7 +22,7 @@ const HISTORY_API_GRAPHQL =
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const MAX_ENTRANTS = 1_000;
-const RAFFLE_DURATION = 7 * 60 * 60 * 24; // three days
+const RAFFLE_DURATION = 3 * 60 * 60 * 24; // three days
 const TICKET_PRICE = new BN(100_000);
 const WSOL_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 

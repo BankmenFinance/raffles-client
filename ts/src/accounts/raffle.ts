@@ -17,18 +17,21 @@ import { deriveConfigAddress } from '../utils/pda';
 import { getAssociatedTokenAddress } from '@project-serum/associated-token';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  Mint,
   TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
-import {
-  GetAssetProofRpcResponse,
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken
-} from '@metaplex-foundation/js';
 import { MPL_TOKEN_AUTH_RULES_PROGRAM_ID } from '@metaplex-foundation/mpl-token-auth-rules';
 import { TransactionInstruction } from '@solana/web3.js';
 import {
+  fromWeb3JsPublicKey,
+  toWeb3JsPublicKey
+} from '@metaplex-foundation/umi-web3js-adapters';
+import { defaultPublicKey, isSome } from '@metaplex-foundation/umi';
+import {
+  findMasterEditionPda,
+  findMetadataPda,
+  findTokenRecordPda,
+  Metadata,
   MPL_TOKEN_METADATA_PROGRAM_ID,
   TokenStandard
 } from '@metaplex-foundation/mpl-token-metadata';
@@ -37,6 +40,10 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID
 } from '@solana/spl-account-compression';
+import {
+  ReadApiAsset,
+  GetAssetProofRpcResponse
+} from '@metaplex-foundation/mpl-bubblegum';
 
 /**
  * Represents a Raffle.
@@ -161,7 +168,8 @@ export class RaffleAccount {
   async addPrize(
     amount: BN,
     prizeType: PrizeType,
-    asset?: Sft | SftWithToken | Nft | NftWithToken,
+    metadataAccount?: Metadata,
+    asset?: ReadApiAsset,
     merkleTree?: ConcurrentMerkleTreeAccount,
     assetProof?: GetAssetProofRpcResponse
   ): Promise<{
@@ -169,9 +177,9 @@ export class RaffleAccount {
     ixs: TransactionInstruction[];
     signers: Keypair[];
   }> {
-    if ((asset && merkleTree) || (asset && assetProof)) {
+    if (metadataAccount && (assetProof || merkleTree)) {
       throw new Error(
-        'Invalid arguments. `asset` and `merkleTree` cannot be passed at the same time.'
+        'Invalid arguments. `metadataAccount` cannot be passed for compressed NFTs.'
       );
     }
 
@@ -211,36 +219,42 @@ export class RaffleAccount {
     };
 
     // if we get in here we know for sure that this is a token | legacy nft | programmable nft
-    if (asset) {
+    if (
+      metadataAccount &&
+      (asset.interface === 'V1_NFT' ||
+        asset.interface === 'V2_NFT' ||
+        asset.interface === 'LEGACY_NFT' ||
+        asset.interface === 'ProgrammableNFT' ||
+        asset.interface === 'FungibleAsset')
+    ) {
       const sourceTokenAccount = await getAssociatedTokenAddress(
         this.client.walletPubkey,
-        asset.mint.address
+        toWeb3JsPublicKey(metadataAccount.mint)
       );
       const prizeTokenAccount = await getAssociatedTokenAddress(
         prize,
-        asset.mint.address
+        toWeb3JsPublicKey(metadataAccount.mint)
       );
       accounts.sourceTokenAccount = sourceTokenAccount;
       accounts.prizeTokenAccount = prizeTokenAccount;
 
       // check if it is legacy nft | programmable nft
       if (
-        asset.tokenStandard == TokenStandard.NonFungible ||
-        asset.tokenStandard == TokenStandard.NonFungibleEdition ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
+        asset.interface === 'V1_NFT' ||
+        asset.interface === 'V2_NFT' ||
+        asset.interface === 'LEGACY_NFT' ||
+        asset.interface === 'ProgrammableNFT' ||
+        asset.interface === 'FungibleAsset'
       ) {
-        const metadata = this.client.metaplex
-          .nfts()
-          .pdas()
-          .metadata({ mint: asset.mint.address });
-        const edition = this.client.metaplex
-          .nfts()
-          .pdas()
-          .masterEdition({ mint: asset.mint.address });
+        const metadata = findMetadataPda(this.client.umi, {
+          mint: metadataAccount.mint
+        });
+        const edition = findMasterEditionPda(this.client.umi, {
+          mint: metadataAccount.mint
+        });
 
         accounts.prizeEdition = edition;
-        accounts.prizeMint = asset.mint.address;
+        accounts.prizeMint = metadataAccount.mint;
         accounts.prizeMetadata = metadata;
 
         accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
@@ -248,18 +262,15 @@ export class RaffleAccount {
       }
 
       // check if it is programmable nft
-      if (
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
-      ) {
-        const sourceTokenRecord = this.client.metaplex
-          .nfts()
-          .pdas()
-          .tokenRecord({ mint: asset.mint.address, token: sourceTokenAccount });
-        const prizeTokenRecord = this.client.metaplex
-          .nfts()
-          .pdas()
-          .tokenRecord({ mint: asset.mint.address, token: prizeTokenAccount });
+      if (asset.interface === 'ProgrammableNFT') {
+        const prizeTokenRecord = findTokenRecordPda(this.client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(prizeTokenAccount)
+        });
+        const sourceTokenRecord = findTokenRecordPda(this.client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(sourceTokenAccount)
+        });
         accounts.sourceTokenRecord = sourceTokenRecord;
         accounts.prizeTokenRecord = prizeTokenRecord;
       }
@@ -267,11 +278,13 @@ export class RaffleAccount {
 
       // check if the programmable nft has a rule set
       if (
-        asset.programmableConfig &&
-        asset.programmableConfig.ruleSet &&
-        !PublicKey.default.equals(asset.programmableConfig.ruleSet)
+        isSome(metadataAccount.programmableConfig) &&
+        isSome(metadataAccount.programmableConfig.value.ruleSet) &&
+        defaultPublicKey().toString() !==
+          metadataAccount.programmableConfig.value.ruleSet.value.toString()
       ) {
-        authorizationRules = asset.programmableConfig.ruleSet;
+        authorizationRules =
+          metadataAccount.programmableConfig.value.ruleSet.value;
       }
       // set the authorization rules account we tried to fetch before
       // if it is null, no problem, means it shouldn't be there anyway
@@ -286,7 +299,7 @@ export class RaffleAccount {
 
     // if we get in here we know for sure that this is a compressed nft
     if (merkleTree && assetProof) {
-      accounts.prizeMerkleTree = merkleTree;
+      accounts.prizeMerkleTree = asset.compression.tree;
       accounts.prizeMerkleTreeAuthority = merkleTree.getAuthority();
       accounts.prizeLeafDelegate = prize;
       accounts.prizeLeafOwner = prize;
@@ -294,7 +307,7 @@ export class RaffleAccount {
       accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
     }
 
-    const prizeTypeArgs = merkleTree
+    const prizeTypeArgs = assetProof
       ? {
           prizeType: {
             compressed: {

@@ -20,7 +20,7 @@ const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 
 export const main = async () => {
-  console.log(`Running createCollection. Cluster: ${CLUSTER}`);
+  console.log(`Running createSplToken. Cluster: ${CLUSTER}`);
   console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);
@@ -32,16 +32,8 @@ export const main = async () => {
     new NodeWallet(wallet)
   );
 
-  const config = createCollectionNftMetadata(rafflesClient);
-
-  await createCollectionNft(
-    rafflesClient,
-    config.metadata,
-    config.imgName,
-    config.sellerFeeBasisPoints,
-    config.symbol,
-    config.creators
-  );
+  // TODO: mint spl token here into our token accounts
+  // so that we can use them as prizes on raffles
 };
 
 main();

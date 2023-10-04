@@ -7,15 +7,12 @@ import { loadWallet } from 'utils';
 import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
-import {
-  GetAssetProofRpcResponse,
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken
-} from '@metaplex-foundation/js';
-import { ConcurrentMerkleTreeAccount } from '@solana/spl-account-compression';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
+import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
+import {
+  fetchMetadata,
+  findMetadataPda
+} from '@metaplex-foundation/mpl-token-metadata';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -28,47 +25,13 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const PRIZE_MINT = new PublicKey(
-  'CxzNWKbA8u3wyV8NqJf2ZpGU1bztgBQmuWup4Z7Ldx79'
+  'AJ56XTB5TRy8JmzCHszaAZUmWXoyMmwCYVMJV9SEYx8i'
 );
 
-const createAddProgrammableNftPrizeTx = async (
-  raffle: RaffleAccount,
-  asset: Sft | SftWithToken | Nft | NftWithToken
-) => {
-  return await raffle.addPrize(new BN(1), { programmable: {} }, asset);
-};
-
-const createAddTokenPrizeTx = async (
-  raffle: RaffleAccount,
-  asset: Sft | SftWithToken | Nft | NftWithToken
-) => {
-  return await raffle.addPrize(new BN(1), { token: {} }, asset);
-};
-
-const createAddLegacyNftPrizeTx = async (
-  raffle: RaffleAccount,
-  asset: Sft | SftWithToken | Nft | NftWithToken
-) => {
-  return await raffle.addPrize(new BN(1), { legacy: {} }, asset);
-};
-
-const createAddCompressedNftPrizeTx = async (
-  raffle: RaffleAccount,
-  asset: Sft | SftWithToken | Nft | NftWithToken,
-  merkleTree: ConcurrentMerkleTreeAccount,
-  assetProof: GetAssetProofRpcResponse
-) => {
-  return await raffle.addPrize(
-    new BN(1),
-    { compressed: { 0: {} } },
-    asset,
-    merkleTree,
-    assetProof
-  );
-};
+const RAFFLE = new PublicKey('HkRTrh2KbiRMbgC5aGajUkymWsqKLAkiaaUncwv7hrRh');
 
 export const main = async () => {
-  console.log(`Running testAddPrize. Cluster: ${CLUSTER}`);
+  console.log(`Running testAddCompressedNftPrize. Cluster: ${CLUSTER}`);
   console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);
@@ -80,17 +43,25 @@ export const main = async () => {
     new NodeWallet(wallet)
   );
 
-  const raffle = await RaffleAccount.load(
-    rafflesClient.program,
-    new PublicKey('BXM6qXcemJyPRzMGMtgGgbJUEfVP5wANAJqe7VWsbGoU')
-  );
+  const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
   // adds programmable nft to raffle
-  const metadata = await rafflesClient.metaplex
-    .nfts()
-    .findByMint({ mintAddress: PRIZE_MINT });
+  const asset = await rafflesClient.umi.rpc.getAsset(
+    fromWeb3JsPublicKey(PRIZE_MINT)
+  );
 
-  const { ixs } = await createAddProgrammableNftPrizeTx(raffle, metadata);
+  const assetProof = await rafflesClient.umi.rpc.getAssetProof(
+    fromWeb3JsPublicKey(PRIZE_MINT)
+  );
+
+  const { ixs } = await await raffle.addPrize(
+    new BN(1),
+    { legacy: {} },
+    null,
+    asset,
+    null,
+    assetProof
+  );
 
   const tx = new Transaction();
 

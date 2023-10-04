@@ -10,13 +10,6 @@ import {
 import { RafflesProgramClient } from '../client';
 import { PrizeState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
-import {
-  Sft,
-  SftWithToken,
-  Nft,
-  NftWithToken,
-  GetAssetProofRpcResponse
-} from '@metaplex-foundation/js';
 import { getAssociatedTokenAddress } from '@project-serum/associated-token';
 import { RaffleAccount } from './raffle';
 import {
@@ -26,14 +19,26 @@ import {
 } from '@solana/spl-account-compression';
 import { BN } from '@coral-xyz/anchor';
 import {
-  MPL_TOKEN_METADATA_PROGRAM_ID,
-  TokenStandard
+  findMasterEditionPda,
+  findMetadataPda,
+  findTokenRecordPda,
+  Metadata,
+  MPL_TOKEN_METADATA_PROGRAM_ID
 } from '@metaplex-foundation/mpl-token-metadata';
 import { MPL_TOKEN_AUTH_RULES_PROGRAM_ID } from '@metaplex-foundation/mpl-token-auth-rules';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
+import {
+  fromWeb3JsPublicKey,
+  toWeb3JsPublicKey
+} from '@metaplex-foundation/umi-web3js-adapters';
+import {
+  GetAssetProofRpcResponse,
+  ReadApiAsset
+} from '@metaplex-foundation/mpl-bubblegum';
+import { defaultPublicKey, isSome } from '@metaplex-foundation/umi';
 
 /**
  * Represents a Prize.
@@ -109,7 +114,8 @@ export class PrizeAccount {
   async claimPrize(
     raffle: RaffleAccount,
     ticketIndex: number,
-    asset?: Sft | SftWithToken | Nft | NftWithToken,
+    asset?: ReadApiAsset,
+    metadataAccount?: Metadata,
     merkleTree?: ConcurrentMerkleTreeAccount,
     assetProof?: GetAssetProofRpcResponse
   ): Promise<{
@@ -117,20 +123,12 @@ export class PrizeAccount {
     ixs: TransactionInstruction[];
     signers: Keypair[];
   }> {
-    const compressedArgs =
-      merkleTree && assetProof
-        ? {
-            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-            dataHash: [
-              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-            ],
-            creatorHash: [
-              ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
-            ],
-            nonce: new BN(asset.compression.leaf_id),
-            index: asset.compression.leaf_id
-          }
-        : null;
+    if (metadataAccount && (assetProof || merkleTree)) {
+      throw new Error(
+        'Invalid arguments. `metadataAccount` cannot be passed for compressed NFTs.'
+      );
+    }
+
     const accounts = {
       raffle: raffle.address,
       prize: this.address,
@@ -163,36 +161,42 @@ export class PrizeAccount {
     };
 
     // if we get in here we know for sure that this is a token | legacy nft | programmable nft
-    if (asset) {
+    if (
+      metadataAccount &&
+      (asset.interface === 'V1_NFT' ||
+        asset.interface === 'V2_NFT' ||
+        asset.interface === 'LEGACY_NFT' ||
+        asset.interface === 'ProgrammableNFT' ||
+        asset.interface === 'FungibleAsset')
+    ) {
       const prizeTokenAccount = await getAssociatedTokenAddress(
         this.address,
-        asset.mint.address
+        toWeb3JsPublicKey(metadataAccount.mint)
       );
       const winnerTokenAccount = await getAssociatedTokenAddress(
         this.client.walletPubkey,
-        asset.mint.address
+        toWeb3JsPublicKey(metadataAccount.mint)
       );
       accounts.prizeTokenAccount = prizeTokenAccount;
       accounts.winnerTokenAccount = winnerTokenAccount;
 
       // check if it is legacy nft | programmable nft
       if (
-        asset.tokenStandard == TokenStandard.NonFungible ||
-        asset.tokenStandard == TokenStandard.NonFungibleEdition ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
+        asset.interface === 'V1_NFT' ||
+        asset.interface === 'V2_NFT' ||
+        asset.interface === 'LEGACY_NFT' ||
+        asset.interface === 'ProgrammableNFT' ||
+        asset.interface === 'FungibleAsset'
       ) {
-        const metadata = this.client.metaplex
-          .nfts()
-          .pdas()
-          .metadata({ mint: asset.mint.address });
-        const edition = this.client.metaplex
-          .nfts()
-          .pdas()
-          .masterEdition({ mint: asset.mint.address });
+        const metadata = findMetadataPda(this.client.umi, {
+          mint: metadataAccount.mint
+        });
+        const edition = findMasterEditionPda(this.client.umi, {
+          mint: metadataAccount.mint
+        });
 
         accounts.prizeEdition = edition;
-        accounts.prizeMint = asset.mint.address;
+        accounts.prizeMint = metadataAccount.mint;
         accounts.prizeMetadata = metadata;
 
         accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
@@ -200,18 +204,15 @@ export class PrizeAccount {
       }
 
       // check if it is programmable nft
-      if (
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungible ||
-        asset.tokenStandard == TokenStandard.ProgrammableNonFungibleEdition
-      ) {
-        const prizeTokenRecord = this.client.metaplex
-          .nfts()
-          .pdas()
-          .tokenRecord({ mint: asset.mint.address, token: prizeTokenAccount });
-        const winnerTokenRecord = this.client.metaplex
-          .nfts()
-          .pdas()
-          .tokenRecord({ mint: asset.mint.address, token: winnerTokenAccount });
+      if (asset.interface === 'ProgrammableNFT') {
+        const prizeTokenRecord = findTokenRecordPda(this.client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(prizeTokenAccount)
+        });
+        const winnerTokenRecord = findTokenRecordPda(this.client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(winnerTokenAccount)
+        });
         accounts.prizeTokenRecord = prizeTokenRecord;
         accounts.winnerTokenRecord = winnerTokenRecord;
       }
@@ -219,11 +220,13 @@ export class PrizeAccount {
 
       // check if the programmable nft has a rule set
       if (
-        asset.programmableConfig &&
-        asset.programmableConfig.ruleSet &&
-        !PublicKey.default.equals(asset.programmableConfig.ruleSet)
+        isSome(metadataAccount.programmableConfig) &&
+        isSome(metadataAccount.programmableConfig.value.ruleSet) &&
+        defaultPublicKey().toString() !==
+          metadataAccount.programmableConfig.value.ruleSet.value.toString()
       ) {
-        authorizationRules = asset.programmableConfig.ruleSet;
+        authorizationRules =
+          metadataAccount.programmableConfig.value.ruleSet.value;
       }
       // set the authorization rules account we tried to fetch before
       // if it is null, no problem, means it shouldn't be there anyway
@@ -245,6 +248,21 @@ export class PrizeAccount {
       accounts.noOpProgram = SPL_NOOP_PROGRAM_ID;
       accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
     }
+
+    const compressedArgs =
+      merkleTree && assetProof
+        ? {
+            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+            dataHash: [
+              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+            ],
+            creatorHash: [
+              ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
+            ],
+            nonce: new BN(asset.compression.leaf_id),
+            index: asset.compression.leaf_id
+          }
+        : null;
 
     const ix = await this.client.methods
       .claimPrize(this.state.prizeIndex, ticketIndex, compressedArgs)

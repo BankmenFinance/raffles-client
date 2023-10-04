@@ -18,7 +18,7 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 export const main = async () => {
-  console.log(`Running listNfts. Cluster: ${CLUSTER}`);
+  console.log(`Running listCompressedNfts. Cluster: ${CLUSTER}`);
   console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);
@@ -41,12 +41,10 @@ export const main = async () => {
     }
     console.log(`Fetched ${assets.items.length} NFTs.`);
 
-    const filteredAssets = assets.items.filter(
-      (m) => !m.compression.compressed
-    );
+    const filteredAssets = assets.items.filter((m) => m.compression.compressed);
 
     if (filteredAssets.length == 0) {
-      console.log(`No NFTs found for owner ${rafflesClient.web3JsPublicKey}`);
+      console.log(`No cNFTs found for owner ${rafflesClient.web3JsPublicKey}`);
       return;
     }
 

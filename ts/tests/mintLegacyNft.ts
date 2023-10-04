@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { delay, loadWallet } from 'utils';
+import { createNftMetadata, delay, loadWallet } from 'utils';
 import { Cluster } from '@bankmenfi/raffles-client/types';
 import { PublicKey } from '@solana/web3.js';
-import {
-  Metaplex,
-  bundlrStorage,
-  keypairIdentity
-} from '@metaplex-foundation/js';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
-import { TokenStandard } from '@metaplex-foundation/mpl-token-metadata';
+import { Creator, createNft } from '@metaplex-foundation/mpl-token-metadata';
 import { RafflesClient } from '@bankmenfi/raffles-client/client';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
+import { base58 } from '@metaplex-foundation/umi/serializers';
+import {
+  PercentAmount,
+  amountToNumber,
+  OptionOrNullable,
+  generateSigner
+} from '@metaplex-foundation/umi';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -27,62 +29,50 @@ const KP_PATH = process.env.KEYPAIR_PATH;
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 
-const COLLECTION = new PublicKey(
-  '7CdaMhWfcR57uFzGUMKyuiqeAqdzdEdF4Y4ghti12p7J'
-);
+const COLLECTION = new PublicKey(process.env.COLLECTION);
 
 async function mintLegacyNft(
-  metaplex: Metaplex,
+  rafflesClient: RafflesClient,
   metadataUri: string,
   name: string,
-  sellerFee: number,
+  sellerFeeBasisPoints: PercentAmount<2>,
   symbol: string,
-  creators: { address: PublicKey; share: number }[],
-  collection: PublicKey
-) {
+  creators: OptionOrNullable<Creator[]>
+): Promise<void> {
   try {
-    console.log(`       Minting pNFT for Collection ${collection.toString()}`);
-    const nftTxBuilder = await metaplex.nfts().builders().create({
+    console.log(
+      `       Minting Legacy NFT for Collection ${COLLECTION.toString()}`
+    );
+    const mint = generateSigner(rafflesClient.umi);
+    const { result, signature } = await createNft(rafflesClient.umi, {
+      mint,
       uri: metadataUri,
-      name: name,
-      sellerFeeBasisPoints: sellerFee,
-      symbol: symbol,
-      creators: creators,
-      isMutable: true,
-      isCollection: false,
-      collection,
-      tokenStandard: TokenStandard.NonFungible,
-      ruleSet: null
-    });
-
-    const { signature, confirmResponse } = await metaplex
-      .rpc()
-      .sendAndConfirmTransaction(nftTxBuilder);
-    if (confirmResponse.value.err) {
-      throw new Error('failed to confirm transaction');
+      name,
+      symbol,
+      sellerFeeBasisPoints,
+      creators,
+      isCollection: true,
+      updateAuthority: rafflesClient.umiPublicKey
+    }).sendAndConfirm(rafflesClient.umi);
+    if (result.value.err) {
+      console.log(
+        `       Error submitting transaction: ${JSON.stringify(
+          result.value.err
+        )}`
+      );
+    } else {
+      console.log(`       Success!🎉`);
+      console.log(
+        `       ✅ - Minted Collection NFT: ${mint.publicKey.toString()}`
+      );
+      console.log(
+        `       https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=devnet`
+      );
+      const [txSignature] = base58.deserialize(signature);
+      console.log(
+        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
+      );
     }
-    const { mintAddress } = nftTxBuilder.getContext();
-    console.log(`       Success!🎉`);
-    console.log(
-      `       Minted NFT: https://explorer.solana.com/address/${mintAddress.toString()}?cluster=devnet`
-    );
-    console.log(
-      `       Tx: https://explorer.solana.com/tx/${signature}?cluster=devnet`
-    );
-
-    await delay(15000);
-
-    console.log(`       Verifying NFT for Collection `);
-    const { response } = await metaplex.nfts().verifyCollection({
-      mintAddress: mintAddress,
-      collectionMintAddress: collection,
-      collectionAuthority: metaplex.identity()
-    });
-    console.log(`       Success!🎉`);
-    console.log(`       ✅ - Verified Collection NFT.`);
-    console.log(
-      `       https://explorer.solana.com/address/${response.signature}?cluster=devnet`
-    );
   } catch (err) {
     console.log(err);
   }
@@ -100,30 +90,15 @@ export const main = async () => {
     RPC_ENDPOINT,
     new NodeWallet(wallet)
   );
-
-  const metaplex = rafflesClient.metaplex.use(keypairIdentity(wallet)).use(
-    bundlrStorage({
-      address: 'https://devnet.bundlr.network',
-      providerUrl: RPC_ENDPOINT,
-      timeout: 60000
-    })
-  );
-  const CONFIG = {
-    imgName: 'Bankmen Finance Test',
-    symbol: 'BFT',
-    sellerFeeBasisPoints: 100, // 100 bp = 5%
-    creators: [{ address: wallet.publicKey, share: 100 }],
-    metadata: 'https://arweave.net/yIgHNXiELgQqW8QIbFM9ibVV37jhvfyW3mFcZGRX-PA'
-  };
+  const CONFIG = createNftMetadata(rafflesClient);
 
   await mintLegacyNft(
-    metaplex,
+    rafflesClient,
     CONFIG.metadata,
     CONFIG.imgName,
     CONFIG.sellerFeeBasisPoints,
     CONFIG.symbol,
-    CONFIG.creators,
-    COLLECTION
+    CONFIG.creators
   );
 };
 

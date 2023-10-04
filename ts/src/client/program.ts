@@ -17,19 +17,24 @@ import { CONFIGS } from '../constants';
 import rafflesIdl from '../generated/idl/raffles.json';
 import type { Raffles } from '../generated/types/raffles';
 import type { Cluster, Wallet } from '../types';
-import { Metaplex } from '@metaplex-foundation/js';
+import { Umi } from '@metaplex-foundation/umi';
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
+import { mplBubblegum, readApi } from '@metaplex-foundation/mpl-bubblegum';
+import { mplTokenAuthRules } from '@metaplex-foundation/mpl-token-auth-rules';
+import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
+import { walletAdapterIdentity } from '@metaplex-foundation/umi-signer-wallet-adapters';
 
 /**
  * This Raffles Client exposes utility methods to facilitate transaction submission.
  */
 export class RafflesProgramClient {
   private _program: Program<Raffles>;
-  public readonly metaplex: Metaplex;
+  public readonly umi: Umi;
 
   constructor(
     readonly cluster: Cluster,
     rpcEndpoint?: string,
-    wallet?: Wallet,
+    readonly wallet?: Wallet,
     confirmOpts = AnchorProvider.defaultOptions()
   ) {
     if (wallet) {
@@ -48,7 +53,16 @@ export class RafflesProgramClient {
       );
     }
 
-    this.metaplex = Metaplex.make(this.connection);
+    this.umi = createUmi(
+      rpcEndpoint ? rpcEndpoint : CONFIGS[this.cluster].RPC_ENDPOINT
+    )
+      .use(readApi())
+      .use(mplBubblegum())
+      .use(mplTokenMetadata())
+      .use(mplTokenAuthRules());
+    if (wallet) {
+      this.umi = this.umi.use(walletAdapterIdentity(wallet));
+    }
   }
 
   connectWallet(

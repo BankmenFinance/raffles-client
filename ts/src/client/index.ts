@@ -1,9 +1,14 @@
 import { RafflesApiClient } from './api';
 import { RafflesProgramClient } from './program';
 import { AnchorProvider, Provider } from '@coral-xyz/anchor';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey as Web3JsPublicKey } from '@solana/web3.js';
 import { Wallet, Cluster } from '../types/index';
-import { Metaplex } from '@metaplex-foundation/js';
+import {
+  Signer as UmiSigner,
+  PublicKey as UmiPublicKey,
+  Umi
+} from '@metaplex-foundation/umi';
+import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
 
 export * from './program';
 export * from './api';
@@ -38,8 +43,8 @@ export class RafflesClient {
     return this.programClient;
   }
 
-  get metaplex(): Metaplex {
-    return this.program.metaplex;
+  get umi(): Umi {
+    return this.program.umi;
   }
 
   get connection(): Connection {
@@ -50,7 +55,15 @@ export class RafflesClient {
     return this.program.anchorProvider;
   }
 
-  get walletPubkey(): PublicKey {
+  get web3JsPublicKey(): Web3JsPublicKey {
     return this.program.walletPubkey;
+  }
+
+  get umiPublicKey(): UmiPublicKey {
+    return fromWeb3JsPublicKey(this.program.walletPubkey);
+  }
+
+  get umiSigner(): UmiSigner {
+    return this.umi.identity;
   }
 }
