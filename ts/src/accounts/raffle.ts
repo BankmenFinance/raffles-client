@@ -26,7 +26,7 @@ import {
   fromWeb3JsPublicKey,
   toWeb3JsPublicKey
 } from '@metaplex-foundation/umi-web3js-adapters';
-import { defaultPublicKey, isSome } from '@metaplex-foundation/umi';
+import { defaultPublicKey, isSome, some } from '@metaplex-foundation/umi';
 import {
   findMasterEditionPda,
   findMetadataPda,
@@ -218,14 +218,15 @@ export class RaffleAccount {
       rent: SYSVAR_RENT_PUBKEY
     };
 
-    // if we get in here we know for sure that this is a token | legacy nft | programmable nft
+    var tokenStandard = -1;
+    if (isSome(metadataAccount.tokenStandard)) {
+      tokenStandard = metadataAccount.tokenStandard.value;
+    }
+    console.log(tokenStandard);
+
+    // checks for metadata account existence
     if (
-      metadataAccount &&
-      (asset.interface === 'V1_NFT' ||
-        asset.interface === 'V2_NFT' ||
-        asset.interface === 'LEGACY_NFT' ||
-        asset.interface === 'ProgrammableNFT' ||
-        asset.interface === 'FungibleAsset')
+      metadataAccount
     ) {
       const sourceTokenAccount = await getAssociatedTokenAddress(
         this.client.walletPubkey,
@@ -237,16 +238,15 @@ export class RaffleAccount {
       );
       accounts.sourceTokenAccount = sourceTokenAccount;
       accounts.prizeTokenAccount = prizeTokenAccount;
-
       // check if it is legacy nft | programmable nft
       if (
-        asset.interface === 'V1_NFT' ||
-        asset.interface === 'V2_NFT' ||
-        asset.interface === 'LEGACY_NFT' ||
-        asset.interface === 'ProgrammableNFT' ||
-        asset.interface === 'FungibleAsset'
+        tokenStandard === 0 ||
+        tokenStandard === 1 ||
+        tokenStandard === 3 ||
+        tokenStandard === 4 || 
+        tokenStandard === 5
       ) {
-        
+
         const [metadata] = findMetadataPda(this.client.umi, {
           mint: metadataAccount.mint
         });
@@ -260,11 +260,13 @@ export class RaffleAccount {
         accounts.prizeMetadata = metadata;
 
         accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
+        console.log(accounts.metadataProgram);
         accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
       }
 
       // check if it is programmable nft
-      if (asset.interface === 'ProgrammableNFT') {
+      if (tokenStandard === 4 || 
+        tokenStandard === 5) {
         const prizeTokenRecord = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(prizeTokenAccount)

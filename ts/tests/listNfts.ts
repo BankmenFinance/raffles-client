@@ -67,6 +67,8 @@ export const main = async () => {
         console.log(e.name);
         console.log("Mint:");
         console.log(e.mint);
+        console.log("Token standard:");
+        console.log(e.tokenStandard);
         if (isSome(e.creators)){
           console.log("The creators are:");
           console.log(e.creators.value.forEach(e => console.log(e.address)));
