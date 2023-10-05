@@ -218,16 +218,11 @@ export class RaffleAccount {
       rent: SYSVAR_RENT_PUBKEY
     };
 
-    var tokenStandard = -1;
-    if (isSome(metadataAccount.tokenStandard)) {
-      tokenStandard = metadataAccount.tokenStandard.value;
-    }
-    console.log(tokenStandard);
-
     // checks for metadata account existence
     if (
-      metadataAccount
+      metadataAccount && isSome(metadataAccount.tokenStandard)
     ) {
+      const tokenStandard = metadataAccount.tokenStandard.value;
       const sourceTokenAccount = await getAssociatedTokenAddress(
         this.client.walletPubkey,
         toWeb3JsPublicKey(metadataAccount.mint)
@@ -267,11 +262,11 @@ export class RaffleAccount {
       // check if it is programmable nft
       if (tokenStandard === 4 || 
         tokenStandard === 5) {
-        const prizeTokenRecord = findTokenRecordPda(this.client.umi, {
+        const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(prizeTokenAccount)
         });
-        const sourceTokenRecord = findTokenRecordPda(this.client.umi, {
+        const [sourceTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(sourceTokenAccount)
         });
