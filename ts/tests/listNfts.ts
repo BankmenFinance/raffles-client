@@ -65,6 +65,8 @@ export const main = async () => {
       if (isSome(e.tokenStandard)){
         console.log("Found NFT with name:");
         console.log(e.name);
+        console.log("Mint:");
+        console.log(e.mint);
         if (isSome(e.creators)){
           console.log("The creators are:");
           console.log(e.creators.value.forEach(e => console.log(e.address)));
