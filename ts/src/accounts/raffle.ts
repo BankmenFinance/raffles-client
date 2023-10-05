@@ -246,12 +246,14 @@ export class RaffleAccount {
         asset.interface === 'ProgrammableNFT' ||
         asset.interface === 'FungibleAsset'
       ) {
-        const metadata = findMetadataPda(this.client.umi, {
+        
+        const [metadata] = findMetadataPda(this.client.umi, {
           mint: metadataAccount.mint
         });
-        const edition = findMasterEditionPda(this.client.umi, {
+
+        const [edition] = findMasterEditionPda(this.client.umi, {
           mint: metadataAccount.mint
-        });
+        });    
 
         accounts.prizeEdition = edition;
         accounts.prizeMint = metadataAccount.mint;
@@ -326,7 +328,7 @@ export class RaffleAccount {
           }
         }
       : prizeType;
-
+    
     const ix = await this.client.methods
       .addPrize({
         prizeIndex: this.prizes,
@@ -336,7 +338,7 @@ export class RaffleAccount {
       })
       .accountsStrict(accounts)
       .instruction();
-
+    
     if (merkleTree) {
       // parse the list of proof addresses into a valid AccountMeta[]
       const canopyDepth = merkleTree.getCanopyDepth();
