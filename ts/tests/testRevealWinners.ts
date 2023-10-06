@@ -19,10 +19,7 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
-const RAFFLE = new PublicKey('H8teQj2Ghm8pqVxFrkFDjmLhWrUJSiKdh5HZ19XLiN9x');
-const PRIZE_MINT = new PublicKey(
-    '7LhmbQYqbXAsmEGe9inDpYGuAuxyDKgG7WykLF37z2wE'
-);
+const RAFFLE = new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE');
 
 export const main = async () => {
     try {

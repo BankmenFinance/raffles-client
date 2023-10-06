@@ -25,10 +25,10 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const PRIZE_MINT = new PublicKey(
-  'AJ56XTB5TRy8JmzCHszaAZUmWXoyMmwCYVMJV9SEYx8i'
+  '75QK9HBVop9Yr2Ctv5JDezkvqPSPG3nF27DESCSbksJW'
 );
 
-const RAFFLE = new PublicKey('HkRTrh2KbiRMbgC5aGajUkymWsqKLAkiaaUncwv7hrRh');
+const RAFFLE = new PublicKey('H8teQj2Ghm8pqVxFrkFDjmLhWrUJSiKdh5HZ19XLiN9x');
 
 export const main = async () => {
   console.log(`Running testAddNftPrize. Cluster: ${CLUSTER}`);
@@ -56,7 +56,8 @@ export const main = async () => {
 
   const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
 
-  const { ixs } = await await raffle.addPrize(
+
+  const { ixs } = await raffle.addPrize(
     new BN(1),
     { legacy: {} },
     metadataAccount,

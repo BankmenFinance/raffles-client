@@ -52,7 +52,7 @@ export const main = async () => {
 
     const raffle = await RaffleAccount.load(
       rafflesClient.program,
-      new PublicKey('H67jNQUmpCzMFF3viCjq39kTZKDnjgH5rSWjY5oTkvU5')
+      new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE')
     );
 
     const tx = new Transaction();

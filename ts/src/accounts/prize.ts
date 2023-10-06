@@ -188,10 +188,10 @@ export class PrizeAccount {
         asset.interface === 'ProgrammableNFT' ||
         asset.interface === 'FungibleAsset'
       ) {
-        const metadata = findMetadataPda(this.client.umi, {
+        const [metadata] = findMetadataPda(this.client.umi, {
           mint: metadataAccount.mint
         });
-        const edition = findMasterEditionPda(this.client.umi, {
+        const [edition] = findMasterEditionPda(this.client.umi, {
           mint: metadataAccount.mint
         });
 
@@ -205,11 +205,11 @@ export class PrizeAccount {
 
       // check if it is programmable nft
       if (asset.interface === 'ProgrammableNFT') {
-        const prizeTokenRecord = findTokenRecordPda(this.client.umi, {
+        const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(prizeTokenAccount)
         });
-        const winnerTokenRecord = findTokenRecordPda(this.client.umi, {
+        const [winnerTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(winnerTokenAccount)
         });
