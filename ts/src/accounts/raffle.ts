@@ -231,8 +231,12 @@ export class RaffleAccount {
         prize,
         toWeb3JsPublicKey(metadataAccount.mint)
       );
+      
+      
       accounts.sourceTokenAccount = sourceTokenAccount;
       accounts.prizeTokenAccount = prizeTokenAccount;
+      accounts.prizeMint = metadataAccount.mint;
+
       // check if it is legacy nft | programmable nft
       if (
         tokenStandard === 0 ||
@@ -251,11 +255,9 @@ export class RaffleAccount {
         });    
 
         accounts.prizeEdition = edition;
-        accounts.prizeMint = metadataAccount.mint;
         accounts.prizeMetadata = metadata;
 
         accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
-        console.log(accounts.metadataProgram);
         accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
       }
 
