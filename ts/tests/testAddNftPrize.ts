@@ -25,10 +25,10 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const PRIZE_MINT = new PublicKey(
-  '75QK9HBVop9Yr2Ctv5JDezkvqPSPG3nF27DESCSbksJW'
+  'D1rQmP1Y1UiuGWSi5Mn9oweaGrFAhCajMXhkbWSj4VZg'
 );
 
-const RAFFLE = new PublicKey('H8teQj2Ghm8pqVxFrkFDjmLhWrUJSiKdh5HZ19XLiN9x');
+const RAFFLE = new PublicKey('BiyiVFhYVrcDL1SnUMAdA1Trf1AwpMidcaumZcAQeJ33');
 
 export const main = async () => {
   console.log(`Running testAddNftPrize. Cluster: ${CLUSTER}`);
@@ -45,10 +45,6 @@ export const main = async () => {
 
   const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
-  // adds programmable nft to raffle
-  const asset = await rafflesClient.umi.rpc.getAsset(
-    fromWeb3JsPublicKey(PRIZE_MINT)
-  );
 
   const metadata = findMetadataPda(rafflesClient.umi, {
     mint: fromWeb3JsPublicKey(PRIZE_MINT)
@@ -56,12 +52,12 @@ export const main = async () => {
 
   const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
 
-
+  //add asset for pnft remove for nft
   const { ixs } = await raffle.addPrize(
     new BN(1),
-    { legacy: {} },
+    { programmable: {} },
     metadataAccount,
-    asset
+    null
   );
 
   const tx = new Transaction();

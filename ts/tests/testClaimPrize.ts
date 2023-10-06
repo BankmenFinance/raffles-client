@@ -27,7 +27,11 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
-const RAFFLE = new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE');
+const RAFFLE = new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2');
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export const main = async () => {
   console.log(`Running testClaimPrize. Cluster: ${CLUSTER}`);
@@ -58,68 +62,51 @@ export const main = async () => {
     if (winner.equals(rafflesClient.web3JsPublicKey)) {
       console.log(
         `🎉🎉🎉 Congratulations!` +
-          `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
-          `\nAttempting to claim prize..`
+        `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
+        `\nAttempting to claim prize..`
       );
+      await delay(1000);
       const [prizeAddress] = derivePrizeAddress(
         RAFFLE,
         prizeIndex,
         rafflesClient.program.programId
       );
-      console.log(prizeAddress);
+      console.log(prizeIndex);
 
+      await delay(1000);
       const prize = await PrizeAccount.load(
         rafflesClient.program,
         prizeAddress
       );
 
+      await delay(1000);
       const tx = new Transaction();
-      console.log(prize.state.metadata.toString());
+      console.log(prize);
 
-      if (
-        prize.state.metadata.toString() !== '11111111111111111111111111111111'
-      ) {
-        const metadata = findMetadataPda(rafflesClient.umi, {
-          mint: fromWeb3JsPublicKey(prizeAddress)
-        });
+      const metadata = findMetadataPda(rafflesClient.umi, {
+        mint: fromWeb3JsPublicKey(prize.state.mint)
+      });
 
-        const metadataAccount = await fetchMetadata(
-          rafflesClient.umi,
-          metadata
-        );
-        const tx = new Transaction();
+      await delay(1000);
+      const metadataAccount = await fetchMetadata(
+        rafflesClient.umi,
+        metadata
+      );
 
-        // adds programmable nft to raffle
-        const asset = await rafflesClient.umi.rpc.getAsset(
-          fromWeb3JsPublicKey(prizeAddress)
-        );
+      await delay(1000);
+      const { ixs } = await prize.claimPrize(
+        raffle,
+        prizeIndex,
+        null,
+        metadataAccount,
+        null,
+        null
+      );
 
-        const { ixs } = await prize.claimPrize(
-          raffle,
-          prizeIndex,
-          asset,
-          metadataAccount,
-          null,
-          null
-        );
-
-        for (const ix of ixs) {
-          tx.add(ix);
-        }
-      } else {
-        const { ixs } = await prize.claimPrize(
-          raffle,
-          prizeIndex,
-          null,
-          null,
-          null,
-          null
-        );
-
-        for (const ix of ixs) {
-          tx.add(ix);
-        }
+      for (const ix of ixs) {
+        tx.add(ix);
       }
+
 
       const signature = await rafflesClient.program.sendAndConfirm(tx, [
         wallet
@@ -134,7 +121,7 @@ export const main = async () => {
     } else {
       console.log(
         `😭😭😭 Looks like you're shit outta luck today!` +
-          `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
+        `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
       );
     }
   }

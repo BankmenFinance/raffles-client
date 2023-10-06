@@ -25,7 +25,7 @@ const PRIZE_MINT = new PublicKey(
   'Ex4wdS6hAFodzQVrAWVRVkT1aRXLMfTdhNd2f4aLn4xF'
 );
 
-const RAFFLE = new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE');
+const RAFFLE = new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2');
 
 export const main = async () => {
   console.log(`Running testAddTokenPrize. Cluster: ${CLUSTER}`);

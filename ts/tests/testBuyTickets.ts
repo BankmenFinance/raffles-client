@@ -34,7 +34,7 @@ const KP_PATH = process.env.KEYPAIR_PATH;
 
 const WSOL_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 
-const TICKETS = 10;
+const TICKETS = 1;
 
 export const main = async () => {
   try {
@@ -52,7 +52,7 @@ export const main = async () => {
 
     const raffle = await RaffleAccount.load(
       rafflesClient.program,
-      new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE')
+      new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2')
     );
 
     const tx = new Transaction();

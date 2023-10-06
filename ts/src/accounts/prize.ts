@@ -162,13 +162,9 @@ export class PrizeAccount {
 
     // if we get in here we know for sure that this is a token | legacy nft | programmable nft
     if (
-      metadataAccount &&
-      (asset.interface === 'V1_NFT' ||
-        asset.interface === 'V2_NFT' ||
-        asset.interface === 'LEGACY_NFT' ||
-        asset.interface === 'ProgrammableNFT' ||
-        asset.interface === 'FungibleAsset')
+      metadataAccount && isSome(metadataAccount.tokenStandard)
     ) {
+      const tokenStandard = metadataAccount.tokenStandard.value;
       const prizeTokenAccount = await getAssociatedTokenAddress(
         this.address,
         toWeb3JsPublicKey(metadataAccount.mint)
@@ -182,11 +178,11 @@ export class PrizeAccount {
 
       // check if it is legacy nft | programmable nft
       if (
-        asset.interface === 'V1_NFT' ||
-        asset.interface === 'V2_NFT' ||
-        asset.interface === 'LEGACY_NFT' ||
-        asset.interface === 'ProgrammableNFT' ||
-        asset.interface === 'FungibleAsset'
+        tokenStandard === 0 ||
+        tokenStandard === 1 ||
+        tokenStandard === 3 ||
+        tokenStandard === 4 ||
+        tokenStandard === 5
       ) {
         const [metadata] = findMetadataPda(this.client.umi, {
           mint: metadataAccount.mint
@@ -204,7 +200,7 @@ export class PrizeAccount {
       }
 
       // check if it is programmable nft
-      if (asset.interface === 'ProgrammableNFT') {
+      if (tokenStandard === 4 || tokenStandard === 5) {
         const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(prizeTokenAccount)
@@ -263,6 +259,9 @@ export class PrizeAccount {
           index: asset.compression.leaf_id
         }
         : null;
+    console.log("accounts");
+
+    console.log(accounts);
 
     const ix = await this.client.methods
       .claimPrize(this.state.prizeIndex, ticketIndex, compressedArgs)
