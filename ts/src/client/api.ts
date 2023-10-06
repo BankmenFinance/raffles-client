@@ -11,9 +11,14 @@ import {
   ticketsForUserAndRaffleQuery
 } from '../api/queries';
 import { PublicKey } from '@solana/web3.js';
+import { Cluster } from '../types';
+import { CONFIGS } from '../constants';
 
 export class RafflesApiClient {
-  constructor(readonly endpoint: string) {}
+  private endpoint: string;
+  constructor(readonly cluster: Cluster, endpoint?: string) {
+    this.endpoint = endpoint ? endpoint : CONFIGS[cluster].HISTORY_API_GRAPHQL;
+  }
 
   async getRaffles(): Promise<AllRaffles> {
     return await fetchGraphqlData<AllRaffles>(this.endpoint, allRafflesQuery);

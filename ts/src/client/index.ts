@@ -30,9 +30,7 @@ export class RafflesClient {
       wallet,
       confirmOpts
     );
-    if (apiEndpoint) {
-      this.apiClient = new RafflesApiClient(apiEndpoint);
-    }
+    this.apiClient = new RafflesApiClient(cluster, apiEndpoint);
   }
 
   get api(): RafflesApiClient {
