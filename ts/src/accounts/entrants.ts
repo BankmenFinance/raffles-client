@@ -50,6 +50,20 @@ export class EntrantsAccount {
   }
 
   /**
+   * The maximum number of entrants for the associated Raffle.
+   */
+  get max(): number {
+    return this.state.max;
+  }
+
+  /**
+   * The total number of entrants so far for the associated Raffle.
+   */
+  get total(): number {
+    return this.state.total;
+  }
+
+  /**
    * Gets the entrant at the given index.
    * @param index The index of the entry.
    * @returns The Public Key of the entrant.

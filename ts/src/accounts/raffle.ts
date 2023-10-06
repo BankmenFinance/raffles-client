@@ -219,9 +219,7 @@ export class RaffleAccount {
     };
 
     // checks for metadata account existence
-    if (
-      metadataAccount && isSome(metadataAccount.tokenStandard)
-    ) {
+    if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
       const tokenStandard = metadataAccount.tokenStandard.value;
       const sourceTokenAccount = await getAssociatedTokenAddress(
         this.client.walletPubkey,
@@ -231,7 +229,6 @@ export class RaffleAccount {
         prize,
         toWeb3JsPublicKey(metadataAccount.mint)
       );
-
 
       accounts.sourceTokenAccount = sourceTokenAccount;
       accounts.prizeTokenAccount = prizeTokenAccount;
@@ -245,7 +242,6 @@ export class RaffleAccount {
         tokenStandard === 4 ||
         tokenStandard === 5
       ) {
-
         const [metadata] = findMetadataPda(this.client.umi, {
           mint: metadataAccount.mint
         });
@@ -262,8 +258,7 @@ export class RaffleAccount {
       }
 
       // check if it is programmable nft
-      if (tokenStandard === 4 ||
-        tokenStandard === 5) {
+      if (tokenStandard === 4 || tokenStandard === 5) {
         const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
           token: fromWeb3JsPublicKey(prizeTokenAccount)
@@ -282,7 +277,7 @@ export class RaffleAccount {
         isSome(metadataAccount.programmableConfig) &&
         isSome(metadataAccount.programmableConfig.value.ruleSet) &&
         defaultPublicKey().toString() !==
-        metadataAccount.programmableConfig.value.ruleSet.value.toString()
+          metadataAccount.programmableConfig.value.ruleSet.value.toString()
       ) {
         authorizationRules =
           metadataAccount.programmableConfig.value.ruleSet.value;
@@ -310,22 +305,22 @@ export class RaffleAccount {
 
     const prizeTypeArgs = assetProof
       ? {
-        prizeType: {
-          compressed: {
-            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-            dataHash: [
-              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-            ],
-            creatorHash: [
-              ...new PublicKey(
-                asset.compression.creator_hash.trim()
-              ).toBytes()
-            ],
-            nonce: asset.compression.leaf_id,
-            index: asset.compression.leaf_id
+          prizeType: {
+            compressed: {
+              root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+              dataHash: [
+                ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+              ],
+              creatorHash: [
+                ...new PublicKey(
+                  asset.compression.creator_hash.trim()
+                ).toBytes()
+              ],
+              nonce: asset.compression.leaf_id,
+              index: asset.compression.leaf_id
+            }
           }
         }
-      }
       : prizeType;
 
     const ix = await this.client.methods
@@ -409,13 +404,11 @@ export class RaffleAccount {
     ixs: TransactionInstruction[];
     signers: Keypair[];
   }> {
-
-
     const ix = await this.client.methods
       .revealWinners()
       .accountsStrict({
         raffle: this.address,
-        slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
+        slotHashes: SYSVAR_SLOT_HASHES_PUBKEY
       })
       .instruction();
 
@@ -444,6 +437,11 @@ export class RaffleAccount {
   /** Gets the total amount of prizes registered for this Raffle. */
   get prizes(): number {
     return this.state.totalPrizes;
+  }
+
+  /** Gets the randomness used to derive the winner ticket indices for this Raffle. */
+  get randomness(): number[] {
+    return this.state.randomness;
   }
 
   /**
