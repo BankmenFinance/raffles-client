@@ -400,6 +400,32 @@ export class RaffleAccount {
     };
   }
 
+  /**
+   * Reveals the winner for this raffle.
+   * @returns A promise which may resolve a Raffle.
+   */
+  async revealWinner(): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
+
+
+    const ix = await this.client.methods
+      .revealWinners()
+      .accountsStrict({
+        raffle: this.address,
+        slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
+  }
+
   /** Gets the creator of the Raffle. */
   get creator(): PublicKey {
     return this.state.creator;
