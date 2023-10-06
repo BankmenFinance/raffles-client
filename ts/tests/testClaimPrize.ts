@@ -57,8 +57,9 @@ export const main = async () => {
 
     if (winner.equals(rafflesClient.web3JsPublicKey)) {
       console.log(
-        `🎉🎉🎉 Congratulations! Your ticket #${winnerTicketIndex} 
-        won prize #${prizeIndex}. Attempting to claim prize..`
+        `🎉🎉🎉 Congratulations!` +
+          `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
+          `\nAttempting to claim prize..`
       );
       const [prizeAddress] = derivePrizeAddress(
         RAFFLE,
@@ -132,8 +133,8 @@ export const main = async () => {
       );
     } else {
       console.log(
-        `😭😭😭 Looks like you're shit outta luck today! Prize #${prizeIndex} was 
-        won by ticket #${winnerTicketIndex}, purchased by ${winner}`
+        `😭😭😭 Looks like you're shit outta luck today!` +
+          `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
       );
     }
   }
