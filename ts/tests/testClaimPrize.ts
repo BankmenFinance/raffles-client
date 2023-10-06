@@ -32,17 +32,26 @@ export const main = async () => {
 
   const raffle = await RaffleAccount.load(
     rafflesClient.program,
-    new PublicKey('BXM6qXcemJyPRzMGMtgGgbJUEfVP5wANAJqe7VWsbGoU')
+    new PublicKey('EdqSJS283BGtFeKmufrLBhMMDL32nbFJuwUQLhAsopHE')
   );
 
   const tx = new Transaction();
 
-  const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
-  console.log(`       Success!🎉`);
-  console.log(`       ✅ - Claimed Prize from Raffle ${raffle.address}.`);
-  console.log(
-    `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+  const tickets = await rafflesClient.api.getTicketsForUserAndRaffle(
+    rafflesClient.web3JsPublicKey,
+    raffle.address
   );
+
+  for (const ticket of tickets.ticket) {
+    console.log(ticket);
+  }
+
+  // const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
+  // console.log(`       Success!🎉`);
+  // console.log(`       ✅ - Claimed Prize from Raffle ${raffle.address}.`);
+  // console.log(
+  //   `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+  // );
 };
 
 main();

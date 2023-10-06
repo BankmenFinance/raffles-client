@@ -1,4 +1,5 @@
 import { BN } from '@coral-xyz/anchor';
+import fetch from 'cross-fetch';
 
 export const getEntrantsSize = (maxEntrants: number) => {
   return 8 + 4 + 4 + 32 * maxEntrants;
@@ -21,7 +22,11 @@ export async function fetchGraphqlData<T>(
     body: JSON.stringify({ query })
   });
 
-  return (await res.json()) as T;
+  if (res.ok) {
+    return (await res.json()).data as T;
+  }
+
+  throw new Error('GraphQL Error: ' + res.statusText);
 }
 
 export function bnToDate(bn: BN): Date {

@@ -22,9 +22,9 @@ export interface AllPrizes {
 }
 
 export interface Ticket {
-  user: string;
+  buyer: string;
   raffle: string;
-  index: number;
+  ticketIndex: number;
 }
 
 export interface AllTickets {

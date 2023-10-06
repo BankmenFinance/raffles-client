@@ -44,8 +44,6 @@ export const allUsersQuery = `
   }
 `;
 
-// TODO:
-
 export const rafflesForMintQuery = (mint: PublicKey) => `
 query raffleForMint {
     raffle(
@@ -76,11 +74,11 @@ query prizesForRaffle {
 export const ticketsForUserQuery = (user: PublicKey) => `
 query ticketsForUser {
   ticket(
-    where: { user: { _eq: "${user.toString()}" } }
+    where: { buyer: { _eq: "${user.toString()}" } }
   ) {
-    user
+    buyer
     raffle
-    index
+    ticket_index
   }
 }
 `;
@@ -92,13 +90,12 @@ export const ticketsForUserAndRaffleQuery = (
 query ticketsForUserAndRaffle {
   ticket(
     where: {
-        user: { _eq: "${user.toString()}" }
-        raffle: { _eq: "${raffle.toString()}" }
-    }
+      buyer: { _eq: "${user.toString()}" },
+      raffle: { _eq: "${raffle.toString()}" }}
   ) {
-    user
+    buyer
     raffle
-    index
+    ticket_index
   }
 }
 `;
