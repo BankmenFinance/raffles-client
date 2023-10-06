@@ -14,8 +14,13 @@ import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 import {
   createInitializeAccountInstruction,
-  createCloseAccountInstruction
+  createCloseAccountInstruction,
+  createAssociatedTokenAccountIdempotent,
+  createAssociatedTokenAccountIdempotentInstruction,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress
 } from '@solana/spl-token';
+import { base58 } from '@metaplex-foundation/umi';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -32,76 +37,85 @@ const WSOL_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const TICKETS = 10;
 
 export const main = async () => {
-  console.log(`Running testBuyTickets. Cluster: ${CLUSTER}`);
-  console.log('Using RPC URL: ' + RPC_ENDPOINT);
+  try {
+    console.log(`Running testBuyTickets. Cluster: ${CLUSTER}`);
+    console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
-  const wallet = loadWallet(KP_PATH);
-  console.log('Wallet Public Key: ' + wallet.publicKey.toString());
+    const wallet = loadWallet(KP_PATH);
+    console.log('Wallet Public Key: ' + wallet.publicKey.toString());
 
-  const rafflesClient = new RafflesClient(
-    CLUSTER,
-    RPC_ENDPOINT,
-    new NodeWallet(wallet)
-  );
-
-  const raffle = await RaffleAccount.load(
-    rafflesClient.program,
-    new PublicKey('BXM6qXcemJyPRzMGMtgGgbJUEfVP5wANAJqe7VWsbGoU')
-  );
-
-  const tx = new Transaction();
-  const extraSigners = [];
-  const wrappedSolTokenAccount = new Keypair();
-
-  if (raffle.state.proceedsMint.equals(WSOL_MINT)) {
-    extraSigners.push(wrappedSolTokenAccount);
-    const rentExemption =
-      await rafflesClient.connection.getMinimumBalanceForRentExemption(165);
-    const lamports =
-      rentExemption + TICKETS * raffle.state.ticketPrice.toNumber();
-    tx.add(
-      SystemProgram.createAccount({
-        fromPubkey: wallet.publicKey,
-        newAccountPubkey: wrappedSolTokenAccount.publicKey,
-        lamports,
-        space: 165,
-        programId: TOKEN_PROGRAM_ID
-      })
+    const rafflesClient = new RafflesClient(
+      CLUSTER,
+      RPC_ENDPOINT,
+      new NodeWallet(wallet)
     );
-    tx.add(
-      createInitializeAccountInstruction(
-        wrappedSolTokenAccount.publicKey,
-        raffle.state.proceedsMint,
-        wallet.publicKey
-      )
+
+    const raffle = await RaffleAccount.load(
+      rafflesClient.program,
+      new PublicKey('H67jNQUmpCzMFF3viCjq39kTZKDnjgH5rSWjY5oTkvU5')
     );
-  }
 
-  const { ixs } = await raffle.buyTickets(TICKETS);
+    const tx = new Transaction();
+    let ata = await getAssociatedTokenAddress(
+      raffle.proceedsMint, // mint
+      wallet.publicKey, // owner
+      false // allow owner off curve
+    );
 
-  for (const ix of ixs) {
-    tx.add(ix);
-  }
-
-  if (raffle.state.proceedsMint.equals(WSOL_MINT)) {
-    tx.add(
+    if (raffle.state.proceedsMint.equals(WSOL_MINT)) {
+      const rentExemption =
+        await rafflesClient.connection.getMinimumBalanceForRentExemption(165);
+      const lamports =
+        rentExemption + TICKETS * raffle.state.ticketPrice.toNumber();
       tx.add(
-        createCloseAccountInstruction(
-          wrappedSolTokenAccount.publicKey,
-          wallet.publicKey,
-          wallet.publicKey
+        SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: ata,
+          lamports: lamports
+        })
+      );
+      tx.add(await createAssociatedTokenAccountIdempotentInstruction(
+        wallet.publicKey,
+        ata,
+        wallet.publicKey,
+        raffle.proceedsMint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID)
+      );
+    }
+
+    const { ixs } = await raffle.buyTickets(TICKETS);
+
+    for (const ix of ixs) {
+      tx.add(ix);
+    }
+
+    if (raffle.state.proceedsMint.equals(WSOL_MINT)) {
+      tx.add(
+        tx.add(
+          createCloseAccountInstruction(
+            ata,
+            wallet.publicKey,
+            wallet.publicKey
+          )
         )
-      )
+      );
+    }
+
+    const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
+
+    console.log(`       Success!🎉`);
+    console.log(
+      `       ✅ - Bought ${TICKETS} tickets.`
     );
-  }
 
-  const allSigners = [wallet];
-  for (const signer of extraSigners) {
-    allSigners.push(signer);
-  }
+    console.log(
+      `       https://explorer.solana.com/tx/${signature.toString()}?cluster=devnet`
+    );
 
-  const signature = await rafflesClient.program.sendAndConfirm(tx, allSigners);
-  console.log('Transaction signature: ' + signature);
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 main();

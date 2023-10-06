@@ -223,7 +223,7 @@ export class PrizeAccount {
         isSome(metadataAccount.programmableConfig) &&
         isSome(metadataAccount.programmableConfig.value.ruleSet) &&
         defaultPublicKey().toString() !==
-          metadataAccount.programmableConfig.value.ruleSet.value.toString()
+        metadataAccount.programmableConfig.value.ruleSet.value.toString()
       ) {
         authorizationRules =
           metadataAccount.programmableConfig.value.ruleSet.value;
@@ -252,16 +252,16 @@ export class PrizeAccount {
     const compressedArgs =
       merkleTree && assetProof
         ? {
-            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-            dataHash: [
-              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-            ],
-            creatorHash: [
-              ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
-            ],
-            nonce: new BN(asset.compression.leaf_id),
-            index: asset.compression.leaf_id
-          }
+          root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+          dataHash: [
+            ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+          ],
+          creatorHash: [
+            ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
+          ],
+          nonce: new BN(asset.compression.leaf_id),
+          index: asset.compression.leaf_id
+        }
         : null;
 
     const ix = await this.client.methods

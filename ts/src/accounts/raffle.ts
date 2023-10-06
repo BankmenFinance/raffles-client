@@ -231,8 +231,8 @@ export class RaffleAccount {
         prize,
         toWeb3JsPublicKey(metadataAccount.mint)
       );
-      
-      
+
+
       accounts.sourceTokenAccount = sourceTokenAccount;
       accounts.prizeTokenAccount = prizeTokenAccount;
       accounts.prizeMint = metadataAccount.mint;
@@ -242,7 +242,7 @@ export class RaffleAccount {
         tokenStandard === 0 ||
         tokenStandard === 1 ||
         tokenStandard === 3 ||
-        tokenStandard === 4 || 
+        tokenStandard === 4 ||
         tokenStandard === 5
       ) {
 
@@ -252,7 +252,7 @@ export class RaffleAccount {
 
         const [edition] = findMasterEditionPda(this.client.umi, {
           mint: metadataAccount.mint
-        });    
+        });
 
         accounts.prizeEdition = edition;
         accounts.prizeMetadata = metadata;
@@ -262,7 +262,7 @@ export class RaffleAccount {
       }
 
       // check if it is programmable nft
-      if (tokenStandard === 4 || 
+      if (tokenStandard === 4 ||
         tokenStandard === 5) {
         const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
           mint: metadataAccount.mint,
@@ -282,7 +282,7 @@ export class RaffleAccount {
         isSome(metadataAccount.programmableConfig) &&
         isSome(metadataAccount.programmableConfig.value.ruleSet) &&
         defaultPublicKey().toString() !==
-          metadataAccount.programmableConfig.value.ruleSet.value.toString()
+        metadataAccount.programmableConfig.value.ruleSet.value.toString()
       ) {
         authorizationRules =
           metadataAccount.programmableConfig.value.ruleSet.value;
@@ -310,24 +310,24 @@ export class RaffleAccount {
 
     const prizeTypeArgs = assetProof
       ? {
-          prizeType: {
-            compressed: {
-              root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-              dataHash: [
-                ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-              ],
-              creatorHash: [
-                ...new PublicKey(
-                  asset.compression.creator_hash.trim()
-                ).toBytes()
-              ],
-              nonce: asset.compression.leaf_id,
-              index: asset.compression.leaf_id
-            }
+        prizeType: {
+          compressed: {
+            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+            dataHash: [
+              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+            ],
+            creatorHash: [
+              ...new PublicKey(
+                asset.compression.creator_hash.trim()
+              ).toBytes()
+            ],
+            nonce: asset.compression.leaf_id,
+            index: asset.compression.leaf_id
           }
         }
+      }
       : prizeType;
-    
+
     const ix = await this.client.methods
       .addPrize({
         prizeIndex: this.prizes,
@@ -337,7 +337,7 @@ export class RaffleAccount {
       })
       .accountsStrict(accounts)
       .instruction();
-    
+
     if (merkleTree) {
       // parse the list of proof addresses into a valid AccountMeta[]
       const canopyDepth = merkleTree.getCanopyDepth();

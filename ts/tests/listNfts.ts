@@ -40,7 +40,7 @@ export const main = async () => {
       { programId: TOKEN_PROGRAM_ID, }
     );
 
-    assets.value.forEach(e => console.log(e.account.data.parsed.info.tokenAmount.decimals)); 
+    assets.value.forEach(e => console.log(e.account.data.parsed.info.tokenAmount.decimals));
     console.log(assets.value.length);
     const filteredValues = assets.value.filter((value) => {
       return value.account.data.parsed.info.tokenAmount.decimals == 0;
@@ -60,21 +60,21 @@ export const main = async () => {
         mint: value.account.data.parsed.info.mint
       })
     ).map(pda => fetchMetadata(rafflesClient.umi, pda));
-    
-    metadataList.forEach(e => e.then( e=> {
-      if (isSome(e.tokenStandard)){
+
+    metadataList.forEach(e => e.then(e => {
+      if (isSome(e.tokenStandard)) {
         console.log("Found NFT with name:");
         console.log(e.name);
         console.log("Mint:");
         console.log(e.mint);
         console.log("Token standard:");
         console.log(e.tokenStandard);
-        if (isSome(e.creators)){
+        if (isSome(e.creators)) {
           console.log("The creators are:");
           console.log(e.creators.value.forEach(e => console.log(e.address)));
         }
       }
-    } 
+    }
     ));
 
   } catch (err) {
