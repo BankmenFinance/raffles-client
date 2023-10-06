@@ -8,6 +8,8 @@ import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
+import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
+import { fetchMetadata, findMetadataPda } from '@metaplex-foundation/mpl-token-metadata';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -20,10 +22,10 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 
 const PRIZE_MINT = new PublicKey(
-  'AJ56XTB5TRy8JmzCHszaAZUmWXoyMmwCYVMJV9SEYx8i'
+  '9PwWJtw4QcURv4VcUBPmL6BzYaSc34DpzZXH8majrm41'
 );
 
-const RAFFLE = new PublicKey('HkRTrh2KbiRMbgC5aGajUkymWsqKLAkiaaUncwv7hrRh');
+const RAFFLE = new PublicKey('JBbW9kvi3LCKdmj6y7Zi61DTzBP9pEFzNZbcHgos9jL8');
 
 export const main = async () => {
   console.log(`Running testAddTokenPrize. Cluster: ${CLUSTER}`);
@@ -38,12 +40,18 @@ export const main = async () => {
     new NodeWallet(wallet)
   );
 
+  const metadata = findMetadataPda(rafflesClient.umi, {
+    mint: fromWeb3JsPublicKey(PRIZE_MINT)
+  });
+
+  const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
+
   const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
   const { ixs } = await raffle.addPrize(
     new BN(1),
     { token: {} },
-    null,
+    metadataAccount,
     null,
     null,
     null
