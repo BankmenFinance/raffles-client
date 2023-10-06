@@ -1,4 +1,4 @@
-import { AccountInfo, PublicKey } from '@solana/web3.js';
+import { AccountInfo, PUBLIC_KEY_LENGTH, PublicKey } from '@solana/web3.js';
 import { RafflesProgramClient } from '../client';
 import { EntrantsState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
@@ -69,9 +69,9 @@ export class EntrantsAccount {
    * @returns The Public Key of the entrant.
    */
   getEntrant(index: number): PublicKey {
-    const startIndex = 8 + 4 + 4 + 32 * index;
-    return PublicKey.decode(
-      this.data.data.subarray(startIndex, startIndex + 32)
+    const startIndex = 8 + 4 + 4 + PUBLIC_KEY_LENGTH * index;
+    return new PublicKey(
+      this.data.data.subarray(startIndex, startIndex + PUBLIC_KEY_LENGTH)
     );
   }
 
