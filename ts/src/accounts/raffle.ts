@@ -17,6 +17,7 @@ import { deriveConfigAddress } from '../utils/pda';
 import { getAssociatedTokenAddress } from '@project-serum/associated-token';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountIdempotentInstruction,
   Mint,
   TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
@@ -44,6 +45,7 @@ import {
   ReadApiAsset,
   GetAssetProofRpcResponse
 } from '@metaplex-foundation/mpl-bubblegum';
+import { ConfigAccount } from './config';
 
 /**
  * Represents a Raffle.
@@ -57,7 +59,9 @@ export class RaffleAccount {
     public state: RaffleState,
     private _onStateUpdate?: StateUpdateHandler<RaffleState>
   ) {
-    this.subscribe();
+    if (_onStateUpdate) {
+      this.subscribe();
+    }
   }
 
   /**
@@ -66,7 +70,7 @@ export class RaffleAccount {
    * @param endTimestamp The ending timestamp of the raffle.
    * @param ticketPrice The price of a ticket, denominated in native units.
    * @param maxEntrants The maximum number of entrants in this raffle.
-   * @returns The accounts, instructions and signers, if necessary.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */
   static async create(
     client: RafflesProgramClient,
@@ -163,7 +167,7 @@ export class RaffleAccount {
   /**
    * Buys tickets for this raffle. .
    * @param client The amount of tickets to buy.
-   * @returns A promise which may resolve a Raffle.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */
   async addPrize(
     amount: BN,
@@ -357,7 +361,7 @@ export class RaffleAccount {
   /**
    * Buys tickets for this raffle. .
    * @param client The amount of tickets to buy.
-   * @returns A promise which may resolve a Raffle.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */
   async buyTickets(amount: number): Promise<{
     accounts: PublicKey[];
@@ -397,7 +401,7 @@ export class RaffleAccount {
 
   /**
    * Reveals the winner for this raffle.
-   * @returns A promise which may resolve a Raffle.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */
   async revealWinner(): Promise<{
     accounts: PublicKey[];
@@ -415,6 +419,97 @@ export class RaffleAccount {
     return {
       accounts: [],
       ixs: [ix],
+      signers: []
+    };
+  }
+
+  /**
+   * Collects the proceeds of the raffle.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
+   */
+  async collectProceeds(configAccount: ConfigAccount): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
+    const [config] = deriveConfigAddress(this.client.programId);
+    const proceeds = await getAssociatedTokenAddress(
+      this.address,
+      this.proceedsMint
+    );
+    const creatorProceeds = await getAssociatedTokenAddress(
+      this.creator,
+      this.state.proceedsMint
+    );
+    const protocolProceeds = await getAssociatedTokenAddress(
+      configAccount.authority,
+      this.state.proceedsMint
+    );
+
+    const createProtocolProceedsIx =
+      await createAssociatedTokenAccountIdempotentInstruction(
+        this.client.walletPubkey,
+        protocolProceeds,
+        configAccount.authority,
+        this.proceedsMint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+    const ix = await this.client.methods
+      .collectProceeds()
+      .accountsStrict({
+        config,
+        raffle: this.address,
+        creator: this.creator,
+        proceedsMint: this.proceedsMint,
+        proceeds,
+        creatorProceeds,
+        protocolProceeds,
+        tokenProgram: TOKEN_PROGRAM_ID
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [createProtocolProceedsIx, ix],
+      signers: []
+    };
+  }
+
+  /**
+   * Closes the Raffle and Entrants account, collecting the rent.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
+   */
+  async close(): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
+    const closeEntrantsIx = await this.client.methods
+      .closeEntrants()
+      .accountsStrict({
+        raffle: this.address,
+        entrants: this.entrants,
+        creator: this.creator
+      })
+      .instruction();
+
+    const proceeds = await getAssociatedTokenAddress(
+      this.address,
+      this.proceedsMint
+    );
+    const closeRaffleIx = await this.client.methods
+      .closeRaffle()
+      .accountsStrict({
+        raffle: this.address,
+        proceeds,
+        creator: this.creator
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [closeEntrantsIx, closeRaffleIx],
       signers: []
     };
   }

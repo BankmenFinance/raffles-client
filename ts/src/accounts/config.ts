@@ -21,7 +21,9 @@ export class ConfigAccount {
     public state: ConfigState,
     private _onStateUpdate?: StateUpdateHandler<ConfigState>
   ) {
-    this.subscribe();
+    if (_onStateUpdate) {
+      this.subscribe();
+    }
   }
 
   /**
@@ -87,6 +89,13 @@ export class ConfigAccount {
       state as ConfigState,
       onStateUpdateHandler
     );
+  }
+
+  /**
+   * Gets the authority.
+   */
+  get authority(): PublicKey {
+    return this.state.authority;
   }
 
   /**

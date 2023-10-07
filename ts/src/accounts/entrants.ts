@@ -16,7 +16,9 @@ export class EntrantsAccount {
     private data: AccountInfo<Buffer>,
     private _onStateUpdate?: StateUpdateHandler<EntrantsState>
   ) {
-    this.subscribe();
+    if (_onStateUpdate) {
+      this.subscribe();
+    }
   }
 
   /**
