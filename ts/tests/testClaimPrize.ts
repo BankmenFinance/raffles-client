@@ -17,7 +17,6 @@ import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
 import { derivePrizeAddress } from '@bankmenfi/raffles-client/utils/pda';
 import { EntrantsAccount } from '../src/accounts/entrants';
 import { expand } from '@bankmenfi/raffles-client/utils/randomness';
-import { delay } from './utils';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -28,7 +27,7 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
-const RAFFLE = new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2');
+const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 export const main = async () => {
   console.log(`Running testClaimPrize. Cluster: ${CLUSTER}`);
@@ -55,6 +54,12 @@ export const main = async () => {
     const winnerTicketIndex =
       expand(Buffer.from(raffle.state.randomness), prizeIndex) % entrants.total;
     const winner = entrants.getEntrant(winnerTicketIndex);
+    const [prizeAddress] = derivePrizeAddress(
+      RAFFLE,
+      prizeIndex,
+      rafflesClient.program.programId
+    );
+    console.log(`Prize: ${prizeAddress}`);
 
     if (winner.equals(rafflesClient.web3JsPublicKey)) {
       console.log(
@@ -62,34 +67,23 @@ export const main = async () => {
           `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
           `\nAttempting to claim prize..`
       );
-      const [prizeAddress] = derivePrizeAddress(
-        RAFFLE,
-        prizeIndex,
-        rafflesClient.program.programId
-      );
-      console.log(prizeIndex);
 
-      await delay(1000);
       const prize = await PrizeAccount.load(
         rafflesClient.program,
         prizeAddress
       );
 
-      await delay(1000);
       const tx = new Transaction();
-      console.log(prize);
 
       const metadata = findMetadataPda(rafflesClient.umi, {
         mint: fromWeb3JsPublicKey(prize.state.mint)
       });
 
-      await delay(1000);
       const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
 
-      await delay(1000);
       const { ixs } = await prize.claimPrize(
         raffle,
-        prizeIndex,
+        winnerTicketIndex,
         null,
         metadataAccount,
         null,
@@ -108,12 +102,50 @@ export const main = async () => {
         `       ✅ - Claimed Prize #${prizeIndex} from Raffle ${raffle.address}.`
       );
       console.log(
-        `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+        `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
       );
     } else {
       console.log(
         `😭😭😭 Looks like you're shit outta luck today!` +
-          `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
+          `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}.` +
+          `\nAttempting to claim on behalf of the winner..`
+      );
+      const prize = await PrizeAccount.load(
+        rafflesClient.program,
+        prizeAddress
+      );
+
+      const tx = new Transaction();
+
+      const metadata = findMetadataPda(rafflesClient.umi, {
+        mint: fromWeb3JsPublicKey(prize.state.mint)
+      });
+
+      const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
+
+      const { ixs } = await prize.claimForWinner(
+        raffle,
+        winner,
+        winnerTicketIndex,
+        null,
+        metadataAccount,
+        null,
+        null
+      );
+
+      for (const ix of ixs) {
+        tx.add(ix);
+      }
+
+      const signature = await rafflesClient.program.sendAndConfirm(tx, [
+        wallet
+      ]);
+      console.log(`       Success!🎉`);
+      console.log(
+        `       ✅ - Claimed Prize #${prizeIndex} from Raffle ${raffle.address}.`
+      );
+      console.log(
+        `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
       );
     }
   }

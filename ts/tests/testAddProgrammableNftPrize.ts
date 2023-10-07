@@ -26,7 +26,7 @@ const KP_PATH = process.env.KEYPAIR_PATH;
 const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 const PRIZE_MINT = new PublicKey(
-  '8wxW6tfNfuRUPf6gNm8cK6WDjtgj4aQ1DrisF1AHgqJe'
+  '7CoeDPWCFH2Exi3K3HSMbtkXSsPeqLWcuQjUV8jLndNm'
 );
 
 export const main = async () => {
@@ -69,7 +69,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Added Prize to Raffle ${raffle.address}.`);
   console.log(
-    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+    `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
   );
 };
 

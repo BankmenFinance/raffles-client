@@ -89,7 +89,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Created Raffle.`);
   console.log(
-    `       https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+    `       https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
   );
 };
 

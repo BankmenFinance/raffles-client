@@ -26,7 +26,7 @@ const KP_PATH = process.env.KEYPAIR_PATH;
 const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 const PRIZE_MINT = new PublicKey(
-  'FBm8YPAGTpvMFTTcMtiWogjefgjXXPuNru6vCCfvnsJj'
+  'CGoaj6VD3LXjBd5mG4EYPhgUuN46sDGGfohfevVtVGUA'
 );
 
 export const main = async () => {
@@ -71,7 +71,7 @@ export const main = async () => {
     `       ✅ - Added Legacy NFT Prize to Raffle ${raffle.address}.`
   );
   console.log(
-    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+    `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
   );
 };
 

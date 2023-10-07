@@ -47,7 +47,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Initialized global Config at ${accounts[0]}.`);
   console.log(
-    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+    `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
   );
 };
 

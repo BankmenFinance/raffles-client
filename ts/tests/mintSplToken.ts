@@ -37,7 +37,7 @@ const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const SPL_TOKEN_MINT = new PublicKey(process.env.SPL_TOKEN_MINT);
 
 export const main = async () => {
-  console.log(`Running mintLegacyNft. Cluster: ${CLUSTER}`);
+  console.log(`Running mintSplToken. Cluster: ${CLUSTER}`);
   console.log('Using RPC URL: ' + RPC_ENDPOINT);
 
   const wallet = loadWallet(KP_PATH);

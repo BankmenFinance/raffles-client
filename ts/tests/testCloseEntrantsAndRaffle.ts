@@ -19,34 +19,36 @@ const KP_PATH = process.env.KEYPAIR_PATH;
 const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 export const main = async () => {
+  console.log(`Running testCollectProceeds. Cluster: ${CLUSTER}`);
+  console.log('Using RPC URL: ' + RPC_ENDPOINT);
+
+  const wallet = loadWallet(KP_PATH);
+  console.log('Wallet Public Key: ' + wallet.publicKey.toString());
+
+  const rafflesClient = new RafflesClient(
+    CLUSTER,
+    RPC_ENDPOINT,
+    new NodeWallet(wallet)
+  );
+
   try {
-    console.log(`Running testRevealWinners. Cluster: ${CLUSTER}`);
-    console.log('Using RPC URL: ' + RPC_ENDPOINT);
-
-    const wallet = loadWallet(KP_PATH);
-    console.log('Wallet Public Key: ' + wallet.publicKey.toString());
-    console.log('Raffle: ' + RAFFLE);
-
-    const rafflesClient = new RafflesClient(
-      CLUSTER,
-      RPC_ENDPOINT,
-      new NodeWallet(wallet)
-    );
-
     const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
+    const { ixs } = await raffle.close();
+
     const tx = new Transaction();
-    const { ixs } = await raffle.revealWinner();
 
     for (const ix of ixs) {
       tx.add(ix);
     }
 
     const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
+
     console.log(`       Success!🎉`);
-    console.log(`       ✅ - Revealed Winner for Raffle ${raffle.address}.`);
+    console.log(`       ✅ - Closed Entrants and Raffle Accounts.`);
+
     console.log(
-      `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
+      `       ✅ Transaction - https://explorer.solana.com/tx/${signature.toString()}?cluster=${CLUSTER}`
     );
   } catch (err) {
     console.log(err);

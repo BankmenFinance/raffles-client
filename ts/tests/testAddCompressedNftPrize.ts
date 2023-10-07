@@ -74,7 +74,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Added Prize to Raffle ${raffle.address}.`);
   console.log(
-    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
+    `       ✅ Transaction - https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`
   );
 };
 
