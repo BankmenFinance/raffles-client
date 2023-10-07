@@ -9,11 +9,6 @@ import { PublicKey } from '@solana/web3.js';
 import { generateSigner } from '@metaplex-foundation/umi';
 import { createFungible } from '@metaplex-foundation/mpl-token-metadata';
 import { base58 } from '@metaplex-foundation/umi/serializers';
-import {
-  TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountIdempotent,
-  mintTo
-} from '@solana/spl-token';
 
 // Load Env Variables
 require('dotenv').config({
@@ -42,9 +37,6 @@ export const main = async () => {
   // mint spl token here into our token accounts
   // so that we can use them as prizes on raffles
   try {
-    console.log(
-      `       Minting Fungible Tokens for Collection ${COLLECTION.toString()}`
-    );
     const mint = generateSigner(rafflesClient.umi);
     const { result, signature } = await createFungible(rafflesClient.umi, {
       mint,
@@ -67,11 +59,11 @@ export const main = async () => {
         `       ✅ - Minted Fungible Token: ${mint.publicKey.toString()}`
       );
       console.log(
-        `       https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=devnet`
+        `       ✅ SPL Token - https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=devnet`
       );
       const [txSignature] = base58.deserialize(signature);
       console.log(
-        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
+        `       ✅ Transaction - https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
       );
     }
   } catch (err) {
