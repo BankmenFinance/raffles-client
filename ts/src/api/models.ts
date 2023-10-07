@@ -11,6 +11,8 @@ export interface AllRaffles {
 }
 
 export interface Prize {
+  claimed: boolean;
+  winner: string;
   address: string;
   raffle: string;
   mint?: string;
