@@ -663,7 +663,7 @@
         },
         {
           "name": "creator",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1661,5 +1661,8 @@
       "name": "CompressedArgsNotProvided",
       "msg": "The compressed args were not provided"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "8H35HKgE2YXbvV1aoU4954jnTuMm88yjGRt1giUgxpwu"
+  }
 }

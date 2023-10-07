@@ -568,7 +568,7 @@ export type Raffles = {
         },
         {
           name: 'creator';
-          isMut: false;
+          isMut: true;
           isSigner: false;
         },
         {
@@ -2046,7 +2046,7 @@ export const IDL: Raffles = {
         },
         {
           name: 'creator',
-          isMut: false,
+          isMut: true,
           isSigner: false
         },
         {
