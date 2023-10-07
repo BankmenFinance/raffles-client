@@ -23,12 +23,8 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
-
-const PRIZE_MINT = new PublicKey(
-  'Ex4wdS6hAFodzQVrAWVRVkT1aRXLMfTdhNd2f4aLn4xF'
-);
-
-const RAFFLE = new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2');
+const RAFFLE = new PublicKey(process.env.RAFFLE);
+const SPL_TOKEN_MINT = new PublicKey(process.env.SPL_TOKEN_MINT);
 
 export const main = async () => {
   console.log(`Running testAddTokenPrize. Cluster: ${CLUSTER}`);
@@ -44,14 +40,13 @@ export const main = async () => {
   );
 
   const metadata = findMetadataPda(rafflesClient.umi, {
-    mint: fromWeb3JsPublicKey(PRIZE_MINT)
+    mint: fromWeb3JsPublicKey(SPL_TOKEN_MINT)
   });
 
   const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
-  console.log(metadataAccount);
 
   const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
-  console.log(raffle);
+
   const { ixs } = await raffle.addPrize(
     new BN(1),
     { token: {} },
@@ -72,7 +67,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Added Prize to Raffle ${raffle.address}.`);
   console.log(
-    `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
   );
 };
 

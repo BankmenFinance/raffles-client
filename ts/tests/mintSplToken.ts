@@ -73,10 +73,10 @@ export const main = async () => {
     console.log(`       Success!🎉`);
     console.log(`       ✅ - Minted Tokens: ${SPL_TOKEN_MINT.toString()}`);
     console.log(
-      `       https://explorer.solana.com/address/${SPL_TOKEN_MINT.toString()}?cluster=${CLUSTER}`
+      `       ✅ SPL Token -https://explorer.solana.com/address/${SPL_TOKEN_MINT.toString()}?cluster=${CLUSTER}`
     );
     console.log(
-      `       https://explorer.solana.com/tx/${mintSig}?cluster=${CLUSTER}`
+      `       ✅ Transaction - https://explorer.solana.com/tx/${mintSig}?cluster=${CLUSTER}`
     );
   } catch (err) {
     console.log(err);

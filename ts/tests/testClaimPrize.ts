@@ -62,7 +62,6 @@ export const main = async () => {
           `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
           `\nAttempting to claim prize..`
       );
-      await delay(1000);
       const [prizeAddress] = derivePrizeAddress(
         RAFFLE,
         prizeIndex,
@@ -109,7 +108,7 @@ export const main = async () => {
         `       ✅ - Claimed Prize #${prizeIndex} from Raffle ${raffle.address}.`
       );
       console.log(
-        `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+        `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
       );
     } else {
       console.log(

@@ -62,14 +62,14 @@ async function mintLegacyNft(
     } else {
       console.log(`       Success!🎉`);
       console.log(
-        `       ✅ - Minted Collection NFT: ${mint.publicKey.toString()}`
+        `       ✅ - Minted Legacy NFT: ${mint.publicKey.toString()}`
       );
       console.log(
-        `       https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=devnet`
+        `       ✅ Legacy NFT - https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=${CLUSTER}`
       );
       const [txSignature] = base58.deserialize(signature);
       console.log(
-        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
+        `       ✅ Transaction - https://explorer.solana.com/tx/${txSignature.toString()}?cluster=${CLUSTER}`
       );
     }
   } catch (err) {

@@ -23,10 +23,11 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
+const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 const WSOL_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 
-const TICKETS = 1;
+const TICKETS = 10;
 
 export const main = async () => {
   try {
@@ -42,10 +43,7 @@ export const main = async () => {
       new NodeWallet(wallet)
     );
 
-    const raffle = await RaffleAccount.load(
-      rafflesClient.program,
-      new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2')
-    );
+    const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
     const tx = new Transaction();
     const ata = await getAssociatedTokenAddress(
@@ -98,7 +96,7 @@ export const main = async () => {
     console.log(`       ✅ - Bought ${TICKETS} tickets.`);
 
     console.log(
-      `       https://explorer.solana.com/tx/${signature.toString()}?cluster=${CLUSTER}`
+      `       ✅ Transaction - https://explorer.solana.com/tx/${signature.toString()}?cluster=${CLUSTER}`
     );
   } catch (err) {
     console.log(err);

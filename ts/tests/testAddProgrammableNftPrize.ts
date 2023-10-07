@@ -23,12 +23,11 @@ require('dotenv').config({
 const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
+const RAFFLE = new PublicKey(process.env.RAFFLE);
 
 const PRIZE_MINT = new PublicKey(
-  'D1rQmP1Y1UiuGWSi5Mn9oweaGrFAhCajMXhkbWSj4VZg'
+  '8wxW6tfNfuRUPf6gNm8cK6WDjtgj4aQ1DrisF1AHgqJe'
 );
-
-const RAFFLE = new PublicKey('BiyiVFhYVrcDL1SnUMAdA1Trf1AwpMidcaumZcAQeJ33');
 
 export const main = async () => {
   console.log(`Running testAddNftPrize. Cluster: ${CLUSTER}`);
@@ -70,7 +69,7 @@ export const main = async () => {
   console.log(`       Success!🎉`);
   console.log(`       ✅ - Added Prize to Raffle ${raffle.address}.`);
   console.log(
-    `       https://explorer.solana.com/address/${signature}?cluster=devnet`
+    `       ✅ Transaction - https://explorer.solana.com/address/${signature}?cluster=${CLUSTER}`
   );
 };
 
