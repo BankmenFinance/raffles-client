@@ -10,7 +10,6 @@ import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { base58 } from '@metaplex-foundation/umi/serializers';
 import {
   PercentAmount,
-  amountToNumber,
   OptionOrNullable,
   generateSigner
 } from '@metaplex-foundation/umi';

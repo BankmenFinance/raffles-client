@@ -9,7 +9,10 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
-import { fetchMetadata, findMetadataPda } from '@metaplex-foundation/mpl-token-metadata';
+import {
+  fetchMetadata,
+  findMetadataPda
+} from '@metaplex-foundation/mpl-token-metadata';
 
 // Load  Env Variables
 require('dotenv').config({

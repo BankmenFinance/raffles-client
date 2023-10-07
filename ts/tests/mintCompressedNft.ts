@@ -108,7 +108,7 @@ async function mintCompressedNft(
       console.log(`       ✅ - Minted and Verified NFT.`);
       const [txSignature] = base58.deserialize(signature);
       console.log(
-        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
+        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=${CLUSTER}`
       );
     }
   } catch (err) {

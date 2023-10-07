@@ -69,11 +69,15 @@ export async function createCollectionNft(
         `       ✅ - Minted Collection NFT: ${mint.publicKey.toString()}`
       );
       console.log(
-        `       https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=devnet`
+        `       https://explorer.solana.com/address/${mint.publicKey.toString()}?cluster=${
+          rafflesClient.program.cluster
+        }`
       );
       const [txSignature] = base58.deserialize(signature);
       console.log(
-        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=devnet`
+        `       https://explorer.solana.com/tx/${txSignature.toString()}?cluster=${
+          rafflesClient.program.cluster
+        }`
       );
       return mint.publicKey;
     }

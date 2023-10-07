@@ -17,6 +17,7 @@ import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
 import { derivePrizeAddress } from '@bankmenfi/raffles-client/utils/pda';
 import { EntrantsAccount } from '../src/accounts/entrants';
 import { expand } from '@bankmenfi/raffles-client/utils/randomness';
+import { delay } from './utils';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -28,10 +29,6 @@ const CLUSTER = (process.env.CLUSTER as Cluster) || 'devnet';
 const RPC_ENDPOINT = process.env.RPC_ENDPOINT || CONFIGS[CLUSTER].RPC_ENDPOINT;
 const KP_PATH = process.env.KEYPAIR_PATH;
 const RAFFLE = new PublicKey('gpHaQiNc3j2BTT5rPvDR1FmXjzEosEmxugFJD1MLWk2');
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 export const main = async () => {
   console.log(`Running testClaimPrize. Cluster: ${CLUSTER}`);
@@ -62,8 +59,8 @@ export const main = async () => {
     if (winner.equals(rafflesClient.web3JsPublicKey)) {
       console.log(
         `🎉🎉🎉 Congratulations!` +
-        `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
-        `\nAttempting to claim prize..`
+          `\nYour ticket #${winnerTicketIndex} won prize #${prizeIndex}.` +
+          `\nAttempting to claim prize..`
       );
       await delay(1000);
       const [prizeAddress] = derivePrizeAddress(
@@ -88,10 +85,7 @@ export const main = async () => {
       });
 
       await delay(1000);
-      const metadataAccount = await fetchMetadata(
-        rafflesClient.umi,
-        metadata
-      );
+      const metadataAccount = await fetchMetadata(rafflesClient.umi, metadata);
 
       await delay(1000);
       const { ixs } = await prize.claimPrize(
@@ -107,7 +101,6 @@ export const main = async () => {
         tx.add(ix);
       }
 
-
       const signature = await rafflesClient.program.sendAndConfirm(tx, [
         wallet
       ]);
@@ -121,7 +114,7 @@ export const main = async () => {
     } else {
       console.log(
         `😭😭😭 Looks like you're shit outta luck today!` +
-        `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
+          `\nPrize #${prizeIndex} was won by ticket #${winnerTicketIndex}, purchased by ${winner}`
       );
     }
   }

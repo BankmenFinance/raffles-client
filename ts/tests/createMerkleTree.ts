@@ -7,8 +7,7 @@ import { RafflesClient } from '@bankmenfi/raffles-client/client';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID,
-  ValidDepthSizePair
+  SPL_NOOP_PROGRAM_ID
 } from '@solana/spl-account-compression';
 import { createTree } from '@metaplex-foundation/mpl-bubblegum';
 import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';

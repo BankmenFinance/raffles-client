@@ -4,23 +4,15 @@ import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { Cluster } from '@bankmenfi/raffles-client/types';
 import { loadWallet } from 'utils';
 import { RaffleAccount } from '@bankmenfi/raffles-client/accounts';
-import {
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  Keypair
-} from '@solana/web3.js';
+import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@coral-xyz/anchor/dist/cjs/utils/token';
 import { CONFIGS } from '@bankmenfi/raffles-client/constants';
 import {
-  createInitializeAccountInstruction,
   createCloseAccountInstruction,
-  createAssociatedTokenAccountIdempotent,
   createAssociatedTokenAccountIdempotentInstruction,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress
 } from '@solana/spl-token';
-import { base58 } from '@metaplex-foundation/umi';
 
 // Load  Env Variables
 require('dotenv').config({
@@ -56,7 +48,7 @@ export const main = async () => {
     );
 
     const tx = new Transaction();
-    let ata = await getAssociatedTokenAddress(
+    const ata = await getAssociatedTokenAddress(
       raffle.proceedsMint, // mint
       wallet.publicKey, // owner
       false // allow owner off curve
@@ -74,13 +66,15 @@ export const main = async () => {
           lamports: lamports
         })
       );
-      tx.add(await createAssociatedTokenAccountIdempotentInstruction(
-        wallet.publicKey,
-        ata,
-        wallet.publicKey,
-        raffle.proceedsMint,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID)
+      tx.add(
+        await createAssociatedTokenAccountIdempotentInstruction(
+          wallet.publicKey,
+          ata,
+          wallet.publicKey,
+          raffle.proceedsMint,
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        )
       );
     }
 
@@ -93,11 +87,7 @@ export const main = async () => {
     if (raffle.state.proceedsMint.equals(WSOL_MINT)) {
       tx.add(
         tx.add(
-          createCloseAccountInstruction(
-            ata,
-            wallet.publicKey,
-            wallet.publicKey
-          )
+          createCloseAccountInstruction(ata, wallet.publicKey, wallet.publicKey)
         )
       );
     }
@@ -105,14 +95,11 @@ export const main = async () => {
     const signature = await rafflesClient.program.sendAndConfirm(tx, [wallet]);
 
     console.log(`       Success!🎉`);
-    console.log(
-      `       ✅ - Bought ${TICKETS} tickets.`
-    );
+    console.log(`       ✅ - Bought ${TICKETS} tickets.`);
 
     console.log(
-      `       https://explorer.solana.com/tx/${signature.toString()}?cluster=devnet`
+      `       https://explorer.solana.com/tx/${signature.toString()}?cluster=${CLUSTER}`
     );
-
   } catch (err) {
     console.log(err);
   }

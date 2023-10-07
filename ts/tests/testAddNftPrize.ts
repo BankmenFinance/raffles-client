@@ -45,7 +45,6 @@ export const main = async () => {
 
   const raffle = await RaffleAccount.load(rafflesClient.program, RAFFLE);
 
-
   const metadata = findMetadataPda(rafflesClient.umi, {
     mint: fromWeb3JsPublicKey(PRIZE_MINT)
   });
