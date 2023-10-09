@@ -141,6 +141,36 @@ export class RaffleAccount {
   }
 
   /**
+   * Loads multiple existing Raffles.
+   * @param client The Raffles Client instance.
+   * @param onStateUpdateHandler A state update handler.
+   * @returns A promise which may resolve an array of Raffles.
+   */
+  static async loadMultiple(
+    client: RafflesProgramClient,
+    addresses: PublicKey[],
+    onStateUpdateHandler?: StateUpdateHandler<RaffleState>
+  ): Promise<RaffleAccount[]> {
+    const raffleAccounts = await client.accounts.raffle.fetchMultiple(
+      addresses
+    );
+    const raffles = [];
+
+    for (const i in raffleAccounts) {
+      raffles.push(
+        new RaffleAccount(
+          client,
+          addresses[i],
+          raffleAccounts[i] as RaffleState,
+          onStateUpdateHandler
+        )
+      );
+    }
+
+    return raffles;
+  }
+
+  /**
    * Loads the given Raffle.
    * @param client The Raffles Client instance.
    * @param address The address of the Raffle to load.
