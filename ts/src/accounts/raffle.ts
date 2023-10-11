@@ -14,7 +14,6 @@ import { StateUpdateHandler } from '../types';
 import { deriveRaffleAddress, derivePrizeAddress } from '../utils/pda';
 import BN from 'bn.js';
 import { deriveConfigAddress } from '../utils/pda';
-import { getAssociatedTokenAddress } from '@project-serum/associated-token';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
@@ -46,6 +45,8 @@ import {
   GetAssetProofRpcResponse
 } from '@metaplex-foundation/mpl-bubblegum';
 import { ConfigAccount } from './config';
+import { createAddPrizeInstruction } from '../instructions';
+import { getAssociatedTokenAddress } from '@solana/spl-token';
 
 /**
  * Represents a Raffle.
@@ -211,181 +212,17 @@ export class RaffleAccount {
     ixs: TransactionInstruction[];
     signers: Keypair[];
   }> {
-    if (metadataAccount && (assetProof || merkleTree)) {
-      throw new Error(
-        'Invalid arguments. `metadataAccount` cannot be passed for compressed NFTs.'
-      );
-    }
-
-    const [prize] = derivePrizeAddress(
+    return await createAddPrizeInstruction(
+      this.client,
       this.address,
       this.prizes,
-      this.client.programId
+      amount,
+      prizeType,
+      metadataAccount,
+      asset,
+      merkleTree,
+      assetProof
     );
-
-    const accounts = {
-      raffle: this.address,
-      prize,
-      creator: this.client.walletPubkey,
-      instructions: null,
-      prizeMint: null,
-      prizeTokenAccount: null,
-      prizeEdition: null,
-      prizeMetadata: null,
-      prizeTokenRecord: null,
-      prizeMerkleTree: null,
-      prizeMerkleTreeAuthority: null,
-      prizeLeafOwner: null,
-      prizeLeafDelegate: null,
-      sourceTokenAccount: null,
-      sourceTokenRecord: null,
-      authorizationRules: null,
-      payer: this.client.walletPubkey,
-      systemProgram: SystemProgram.programId,
-      tokenProgram: null,
-      associatedTokenProgram: null,
-      metadataProgram: null,
-      authRulesProgram: null,
-      bubblegumProgram: null,
-      accountCompressionProgram: null,
-      noOpProgram: null,
-      rent: SYSVAR_RENT_PUBKEY
-    };
-
-    // checks for metadata account existence
-    if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
-      const tokenStandard = metadataAccount.tokenStandard.value;
-      const sourceTokenAccount = await getAssociatedTokenAddress(
-        this.client.walletPubkey,
-        toWeb3JsPublicKey(metadataAccount.mint)
-      );
-      const prizeTokenAccount = await getAssociatedTokenAddress(
-        prize,
-        toWeb3JsPublicKey(metadataAccount.mint)
-      );
-
-      accounts.sourceTokenAccount = sourceTokenAccount;
-      accounts.prizeTokenAccount = prizeTokenAccount;
-      accounts.prizeMint = metadataAccount.mint;
-
-      // check if it is legacy nft | programmable nft
-      if (
-        tokenStandard === 0 ||
-        tokenStandard === 1 ||
-        tokenStandard === 3 ||
-        tokenStandard === 4 ||
-        tokenStandard === 5
-      ) {
-        const [metadata] = findMetadataPda(this.client.umi, {
-          mint: metadataAccount.mint
-        });
-
-        const [edition] = findMasterEditionPda(this.client.umi, {
-          mint: metadataAccount.mint
-        });
-
-        accounts.prizeEdition = edition;
-        accounts.prizeMetadata = metadata;
-
-        accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
-        accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
-      }
-
-      // check if it is programmable nft
-      if (tokenStandard === 4 || tokenStandard === 5) {
-        const [prizeTokenRecord] = findTokenRecordPda(this.client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(prizeTokenAccount)
-        });
-        const [sourceTokenRecord] = findTokenRecordPda(this.client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(sourceTokenAccount)
-        });
-        accounts.sourceTokenRecord = sourceTokenRecord;
-        accounts.prizeTokenRecord = prizeTokenRecord;
-      }
-      let authorizationRules = null;
-
-      // check if the programmable nft has a rule set
-      if (
-        isSome(metadataAccount.programmableConfig) &&
-        isSome(metadataAccount.programmableConfig.value.ruleSet) &&
-        defaultPublicKey().toString() !==
-          metadataAccount.programmableConfig.value.ruleSet.value.toString()
-      ) {
-        authorizationRules =
-          metadataAccount.programmableConfig.value.ruleSet.value;
-      }
-      // set the authorization rules account we tried to fetch before
-      // if it is null, no problem, means it shouldn't be there anyway
-      accounts.authorizationRules = authorizationRules;
-      if (authorizationRules) {
-        accounts.authRulesProgram = MPL_TOKEN_AUTH_RULES_PROGRAM_ID;
-      }
-
-      accounts.tokenProgram = TOKEN_PROGRAM_ID;
-      accounts.associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
-    }
-
-    // if we get in here we know for sure that this is a compressed nft
-    if (merkleTree && assetProof) {
-      accounts.prizeMerkleTree = asset.compression.tree;
-      accounts.prizeMerkleTreeAuthority = merkleTree.getAuthority();
-      accounts.prizeLeafDelegate = prize;
-      accounts.prizeLeafOwner = prize;
-      accounts.noOpProgram = SPL_NOOP_PROGRAM_ID;
-      accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
-    }
-
-    const prizeTypeArgs = assetProof
-      ? {
-          prizeType: {
-            compressed: {
-              root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-              dataHash: [
-                ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-              ],
-              creatorHash: [
-                ...new PublicKey(
-                  asset.compression.creator_hash.trim()
-                ).toBytes()
-              ],
-              nonce: asset.compression.leaf_id,
-              index: asset.compression.leaf_id
-            }
-          }
-        }
-      : prizeType;
-
-    const ix = await this.client.methods
-      .addPrize({
-        prizeIndex: this.prizes,
-        amount,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        prizeType: prizeTypeArgs as any
-      })
-      .accountsStrict(accounts)
-      .instruction();
-
-    if (merkleTree) {
-      // parse the list of proof addresses into a valid AccountMeta[]
-      const canopyDepth = merkleTree.getCanopyDepth();
-      const proof: AccountMeta[] = assetProof.proof
-        // eslint-disable-next-line no-extra-boolean-cast
-        .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
-        .map((node: string) => ({
-          pubkey: new PublicKey(node),
-          isSigner: false,
-          isWritable: false
-        }));
-      ix.keys.push(...proof);
-    }
-
-    return {
-      accounts: [prize],
-      ixs: [ix],
-      signers: []
-    };
   }
 
   /**
