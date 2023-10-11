@@ -89,7 +89,11 @@ export class RaffleAccount {
       entrants.publicKey,
       client.programId
     );
-    const proceeds = await getAssociatedTokenAddress(raffle, proceedsMint);
+    const proceeds = await getAssociatedTokenAddress(
+      proceedsMint,
+      raffle,
+      true
+    );
 
     const ix = await client.methods
       .createRaffle(endTimestamp, ticketPrice, maxEntrants)
@@ -237,12 +241,13 @@ export class RaffleAccount {
   }> {
     const [config] = deriveConfigAddress(this.client.programId);
     const proceeds = await getAssociatedTokenAddress(
+      this.proceedsMint,
       this.address,
-      this.proceedsMint
+      true
     );
     const buyerTokenAccount = await getAssociatedTokenAddress(
-      this.client.walletPubkey,
-      this.state.proceedsMint
+      this.state.proceedsMint,
+      this.client.walletPubkey
     );
 
     const ix = await this.client.methods
@@ -301,16 +306,18 @@ export class RaffleAccount {
   }> {
     const [config] = deriveConfigAddress(this.client.programId);
     const proceeds = await getAssociatedTokenAddress(
+      this.proceedsMint,
       this.address,
-      this.proceedsMint
+      true
     );
     const creatorProceeds = await getAssociatedTokenAddress(
-      this.creator,
-      this.state.proceedsMint
+      this.state.proceedsMint,
+      this.creator
     );
     const protocolProceeds = await getAssociatedTokenAddress(
+      this.state.proceedsMint,
       configAccount.authority,
-      this.state.proceedsMint
+      true
     );
 
     const createProtocolProceedsIx =
@@ -362,8 +369,8 @@ export class RaffleAccount {
       .instruction();
 
     const proceeds = await getAssociatedTokenAddress(
-      this.address,
-      this.proceedsMint
+      this.proceedsMint,
+      this.address
     );
     const closeRaffleIx = await this.client.methods
       .closeRaffle()

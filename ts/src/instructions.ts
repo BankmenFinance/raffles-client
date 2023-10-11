@@ -57,13 +57,13 @@ const processInstructionAccounts = async (
   if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
     const tokenStandard = metadataAccount.tokenStandard.value;
     const sourceTokenAccount = await getAssociatedTokenAddress(
-      sourceOwner,
       toWeb3JsPublicKey(metadataAccount.mint),
+      sourceOwner,
       true
     );
     const prizeTokenAccount = await getAssociatedTokenAddress(
-      destinationOwner,
       toWeb3JsPublicKey(metadataAccount.mint),
+      destinationOwner,
       true
     );
 
