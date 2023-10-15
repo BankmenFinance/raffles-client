@@ -1,7 +1,7 @@
 import { AccountInfo, PUBLIC_KEY_LENGTH, PublicKey } from '@solana/web3.js';
 import { RafflesProgramClient } from '../client';
 import { EntrantsState } from '../types/on-chain';
-import { StateUpdateHandler } from '../types';
+import { ErrorHandler, StateUpdateHandler } from '../types';
 
 /**
  * Represents an Entrants account, this account stores information about entrants of a Raffle.
@@ -9,14 +9,17 @@ import { StateUpdateHandler } from '../types';
  * This class exposes utility methods related to this on-chain account.
  */
 export class EntrantsAccount {
+  private _listener: number;
+  public lastSlotUpdate: number;
   constructor(
     readonly client: RafflesProgramClient,
     readonly address: PublicKey,
     public state: EntrantsState,
     private data: AccountInfo<Buffer>,
-    private _onStateUpdate?: StateUpdateHandler<EntrantsState>
+    private _onStateUpdateHandler?: StateUpdateHandler<EntrantsState>,
+    private _errorHandler?: ErrorHandler
   ) {
-    if (_onStateUpdate) {
+    if (_onStateUpdateHandler) {
       this.subscribe();
     }
   }
@@ -31,7 +34,8 @@ export class EntrantsAccount {
   static async load(
     client: RafflesProgramClient,
     address: PublicKey,
-    onStateUpdateHandler?: StateUpdateHandler<EntrantsState>
+    onStateUpdateHandler?: StateUpdateHandler<EntrantsState>,
+    errorHandler?: ErrorHandler
   ): Promise<EntrantsAccount> {
     const accountInfo = await client.accounts.entrants.getAccountInfo(address);
 
@@ -47,7 +51,8 @@ export class EntrantsAccount {
       address,
       state as EntrantsState,
       accountInfo,
-      onStateUpdateHandler
+      onStateUpdateHandler,
+      errorHandler
     );
   }
 
@@ -80,22 +85,43 @@ export class EntrantsAccount {
   /**
    * Subscribes to state changes of this account.
    */
-  subscribe() {
-    this.client.accounts.entrants
-      .subscribe(this.address)
-      .on('change', (state: EntrantsState) => {
-        this.state = state;
-        // todo: check if dexMarkets need to be reloaded.(market listing/delisting)
-        if (this._onStateUpdate) {
-          this._onStateUpdate(this.state);
-        }
-      });
+  async subscribe() {
+    await this.removeListener();
+    try {
+      this.addListener();
+    } catch (error: unknown) {
+      if (this._errorHandler) {
+        this._errorHandler(error);
+      }
+    }
+  }
+
+  private addListener() {
+    this.client.connection.onAccountChange(this.address, (accountInfo, ctx) => {
+      this.data = accountInfo;
+      this.lastSlotUpdate = ctx.slot;
+      const state = this.client.accounts.entrants.coder.accounts.decode(
+        'Entrants',
+        accountInfo.data
+      );
+      this.state = state;
+      if (this._onStateUpdateHandler) {
+        this._onStateUpdateHandler(this.state);
+      }
+    });
+  }
+
+  private async removeListener() {
+    if (this._listener) {
+      await this.client.connection.removeAccountChangeListener(this._listener);
+      this._listener = null;
+    }
   }
 
   /**
    * Unsubscribes to state changes of this account.
    */
   async unsubscribe() {
-    await this.client.accounts.entrants.unsubscribe(this.address);
+    await this.removeListener();
   }
 }

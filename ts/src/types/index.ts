@@ -9,9 +9,7 @@ export interface Config {
 }
 
 export type StateUpdateHandler<T> = (state: T) => void;
-export type ParsedOrderbook = [number, number][];
-export type OrderbookListenerCB = (bidsOrAsks: ParsedOrderbook) => void;
-export type Fills = { price: number; amount: number }[];
+export type ErrorHandler = (error: unknown) => void;
 
 export interface Wallet {
   signTransaction<T extends Transaction | VersionedTransaction>(
