@@ -43,11 +43,11 @@ const processInstructionAccounts = async (
   accounts: Accounts,
   sourceOwner: PublicKey,
   destinationOwner: PublicKey,
+  isClaim: boolean,
   metadataAccount?: Metadata,
   asset?: ReadApiAsset,
   merkleTree?: ConcurrentMerkleTreeAccount,
-  assetProof?: GetAssetProofRpcResponse,
-  isClaim?: boolean
+  assetProof?: GetAssetProofRpcResponse
 ) => {
   if (metadataAccount && (assetProof || merkleTree)) {
     throw new Error(
@@ -57,6 +57,7 @@ const processInstructionAccounts = async (
   // checks for metadata account existence
   if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
     const tokenStandard = metadataAccount.tokenStandard.value;
+    // derive token account pdas
     const sourceTokenAccount = await getAssociatedTokenAddress(
       toWeb3JsPublicKey(metadataAccount.mint),
       sourceOwner,
@@ -69,12 +70,15 @@ const processInstructionAccounts = async (
     );
 
     accounts.prizeMint = metadataAccount.mint;
+    // check if it is a claim
     if (isClaim) {
+      // if it is a claim, prize gets transferred from prize to winner
+      accounts.prizeTokenAccount = sourceTokenAccount;
       accounts.winnerTokenAccount = destinationTokenAccount;
-      accounts.sourceTokenAccount = sourceTokenAccount;
     } else {
-      accounts.prizeTokenAccount = destinationTokenAccount;
+      // if it is not a claim, prize gets transferred from source (creator) to prize
       accounts.sourceTokenAccount = sourceTokenAccount;
+      accounts.prizeTokenAccount = destinationTokenAccount;
     }
 
     // check if it is legacy nft | programmable nft
@@ -104,28 +108,24 @@ const processInstructionAccounts = async (
       tokenStandard === TokenStandard.ProgrammableNonFungible ||
       tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
     ) {
+      // derive token record pdas
+      const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
+        mint: metadataAccount.mint,
+        token: fromWeb3JsPublicKey(sourceTokenAccount)
+      });
+      const [destinationTokenRecord] = findTokenRecordPda(client.umi, {
+        mint: metadataAccount.mint,
+        token: fromWeb3JsPublicKey(destinationTokenAccount)
+      });
+      // check if it is a claim
       if (isClaim) {
-        const [winnerTokenRecord] = findTokenRecordPda(client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(destinationTokenAccount)
-        });
-        const [prizeTokenRecord] = findTokenRecordPda(client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(sourceTokenAccount)
-        });
-        accounts.prizeTokenRecord = prizeTokenRecord;
-        accounts.winnerTokenRecord = winnerTokenRecord;
+        // if it is a claim, prize gets transferred from prize to winner
+        accounts.prizeTokenRecord = sourceTokenRecord;
+        accounts.winnerTokenRecord = destinationTokenRecord;
       } else {
-        const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(sourceTokenAccount)
-        });
-        const [prizeTokenRecord] = findTokenRecordPda(client.umi, {
-          mint: metadataAccount.mint,
-          token: fromWeb3JsPublicKey(destinationTokenAccount)
-        });
+        // if it is not a claim, prize gets transferred from source (creator) to prize
         accounts.sourceTokenRecord = sourceTokenRecord;
-        accounts.prizeTokenRecord = prizeTokenRecord;
+        accounts.prizeTokenRecord = destinationTokenRecord;
       }
     }
     let authorizationRules = null;
@@ -185,8 +185,6 @@ export const createAddPrizeInstruction = async (
     {
       raffle,
       prize,
-      creator: client.walletPubkey,
-      instructions: null,
       prizeMint: null,
       prizeTokenAccount: null,
       prizeEdition: null,
@@ -199,6 +197,7 @@ export const createAddPrizeInstruction = async (
       sourceTokenAccount: null,
       sourceTokenRecord: null,
       authorizationRules: null,
+      creator: client.walletPubkey,
       payer: client.walletPubkey,
       systemProgram: SystemProgram.programId,
       tokenProgram: null,
@@ -208,15 +207,16 @@ export const createAddPrizeInstruction = async (
       bubblegumProgram: null,
       accountCompressionProgram: null,
       noOpProgram: null,
-      rent: SYSVAR_RENT_PUBKEY
+      rent: SYSVAR_RENT_PUBKEY,
+      instructions: null
     },
     client.walletPubkey,
     prize,
+    false,
     metadataAccount,
     asset,
     merkleTree,
-    assetProof,
-    false
+    assetProof
   );
 
   const prizeTypeArgs = assetProof
@@ -293,8 +293,6 @@ export const createClaimPrizeInstruction = async (
       raffle,
       prize,
       entrants,
-      creator,
-      instructions: null,
       prizeMint: null,
       prizeTokenAccount: null,
       prizeEdition: null,
@@ -306,8 +304,9 @@ export const createClaimPrizeInstruction = async (
       prizeLeafDelegate: null,
       winnerTokenAccount: null,
       winnerTokenRecord: null,
-      winner,
       authorizationRules: null,
+      creator,
+      winner,
       payer,
       systemProgram: SystemProgram.programId,
       tokenProgram: null,
@@ -317,15 +316,16 @@ export const createClaimPrizeInstruction = async (
       bubblegumProgram: null,
       accountCompressionProgram: null,
       noOpProgram: null,
-      rent: SYSVAR_RENT_PUBKEY
+      rent: SYSVAR_RENT_PUBKEY,
+      instructions: null
     },
     prize,
     winner,
+    true,
     metadataAccount,
     asset,
     merkleTree,
-    assetProof,
-    true
+    assetProof
   );
 
   const compressedArgs =
