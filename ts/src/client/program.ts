@@ -113,7 +113,7 @@ export class RafflesProgramClient {
   }
 
   get walletPubkey(): PublicKey {
-    return this.anchorProvider?.wallet.publicKey;
+    return this.anchorProvider?.publicKey;
   }
 
   get programId(): PublicKey {

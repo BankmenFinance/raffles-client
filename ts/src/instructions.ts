@@ -46,7 +46,8 @@ const processInstructionAccounts = async (
   metadataAccount?: Metadata,
   asset?: ReadApiAsset,
   merkleTree?: ConcurrentMerkleTreeAccount,
-  assetProof?: GetAssetProofRpcResponse
+  assetProof?: GetAssetProofRpcResponse,
+  isClaim?: boolean
 ) => {
   if (metadataAccount && (assetProof || merkleTree)) {
     throw new Error(
@@ -61,15 +62,20 @@ const processInstructionAccounts = async (
       sourceOwner,
       true
     );
-    const prizeTokenAccount = await getAssociatedTokenAddress(
+    const destinationTokenAccount = await getAssociatedTokenAddress(
       toWeb3JsPublicKey(metadataAccount.mint),
       destinationOwner,
       true
     );
 
-    accounts.sourceTokenAccount = sourceTokenAccount;
-    accounts.prizeTokenAccount = prizeTokenAccount;
     accounts.prizeMint = metadataAccount.mint;
+    if (isClaim) {
+      accounts.winnerTokenAccount = destinationTokenAccount;
+      accounts.sourceTokenAccount = sourceTokenAccount;
+    } else {
+      accounts.prizeTokenAccount = destinationTokenAccount;
+      accounts.sourceTokenAccount = sourceTokenAccount;
+    }
 
     // check if it is legacy nft | programmable nft
     if (
@@ -98,16 +104,29 @@ const processInstructionAccounts = async (
       tokenStandard === TokenStandard.ProgrammableNonFungible ||
       tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
     ) {
-      const [prizeTokenRecord] = findTokenRecordPda(client.umi, {
-        mint: metadataAccount.mint,
-        token: fromWeb3JsPublicKey(prizeTokenAccount)
-      });
-      const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
-        mint: metadataAccount.mint,
-        token: fromWeb3JsPublicKey(sourceTokenAccount)
-      });
-      accounts.sourceTokenRecord = sourceTokenRecord;
-      accounts.prizeTokenRecord = prizeTokenRecord;
+      if (isClaim) {
+        const [winnerTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(destinationTokenAccount)
+        });
+        const [prizeTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(sourceTokenAccount)
+        });
+        accounts.prizeTokenRecord = prizeTokenRecord;
+        accounts.winnerTokenRecord = winnerTokenRecord;
+      } else {
+        const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(sourceTokenAccount)
+        });
+        const [prizeTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(destinationTokenAccount)
+        });
+        accounts.sourceTokenRecord = sourceTokenRecord;
+        accounts.prizeTokenRecord = prizeTokenRecord;
+      }
     }
     let authorizationRules = null;
 
@@ -196,7 +215,8 @@ export const createAddPrizeInstruction = async (
     metadataAccount,
     asset,
     merkleTree,
-    assetProof
+    assetProof,
+    false
   );
 
   const prizeTypeArgs = assetProof
@@ -304,7 +324,8 @@ export const createClaimPrizeInstruction = async (
     metadataAccount,
     asset,
     merkleTree,
-    assetProof
+    assetProof,
+    true
   );
 
   const compressedArgs =
