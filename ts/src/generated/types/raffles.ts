@@ -193,59 +193,22 @@ export type Raffles = {
           isMut: false;
           isSigner: false;
           isOptional: true;
-          docs: ['The prize master edition account.'];
+          docs: ['The prize [`Metadata`] master edition account.'];
         },
         {
           name: 'prizeMetadata';
           isMut: true;
           isSigner: false;
           isOptional: true;
-          docs: ['The prize metadata account.'];
+          docs: ['The prize [`Metadata`] account.'];
         },
         {
           name: 'prizeTokenRecord';
           isMut: true;
           isSigner: false;
           isOptional: true;
-        },
-        {
-          name: 'prizeMerkleTree';
-          isMut: true;
-          isSigner: false;
-          isOptional: true;
           docs: [
-            'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeMerkleTreeAuthority';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
-            'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeLeafOwner';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
-            'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeLeafDelegate';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
-            'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
+            'The prize [`Metadata`] Token Record Account if the prize is a Programmable NFT.'
           ];
         },
         {
@@ -254,7 +217,15 @@ export type Raffles = {
           isSigner: false;
           isOptional: true;
           docs: [
-            'The source Token Account if the prize is not a Compressed NFT.'
+            'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The source [`TokenAccount`] if the prize is not a Compressed NFT.'
           ];
         },
         {
@@ -324,31 +295,15 @@ export type Raffles = {
           docs: ['The Metaplex Token Auth Rules Program.'];
         },
         {
-          name: 'bubblegumProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The Metaplex Bubblegum Program.'];
-        },
-        {
-          name: 'accountCompressionProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The Account Compression Program.'];
-        },
-        {
-          name: 'noOpProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The No Op Program.'];
-        },
-        {
           name: 'rent';
           isMut: false;
           isSigner: false;
-          docs: ['The Rent Sysvar.'];
+          docs: [
+            'The Metaplex Bubblegum Program.',
+            'The Account Compression Program.',
+            'The No Op Program.',
+            'The Rent Sysvar.'
+          ];
         },
         {
           name: 'instructions';
@@ -504,51 +459,21 @@ export type Raffles = {
           isOptional: true;
         },
         {
-          name: 'prizeMerkleTree';
+          name: 'winnerTokenAccount';
           isMut: true;
           isSigner: false;
           isOptional: true;
           docs: [
             'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeMerkleTreeAuthority';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
+            '',
             'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeLeafOwner';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
+            '',
             'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ];
-        },
-        {
-          name: 'prizeLeafDelegate';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: [
+            '',
             'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
+            '',
+            "The winner's token account."
           ];
-        },
-        {
-          name: 'winnerTokenAccount';
-          isMut: true;
-          isSigner: false;
-          isOptional: true;
-          docs: ["The winner's token account."];
         },
         {
           name: 'winnerTokenRecord';
@@ -616,31 +541,15 @@ export type Raffles = {
           docs: ['The Metaplex Token Auth Rules Program.'];
         },
         {
-          name: 'bubblegumProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The Metaplex Bubblegum Program.'];
-        },
-        {
-          name: 'accountCompressionProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The Account Compression Program.'];
-        },
-        {
-          name: 'noOpProgram';
-          isMut: false;
-          isSigner: false;
-          isOptional: true;
-          docs: ['The No Op Program.'];
-        },
-        {
           name: 'rent';
           isMut: false;
           isSigner: false;
-          docs: ['The Rent Sysvar.'];
+          docs: [
+            'The Metaplex Bubblegum Program.',
+            'The Account Compression Program.',
+            'The No Op Program.',
+            'The Rent Sysvar.'
+          ];
         },
         {
           name: 'instructions';
@@ -1472,6 +1381,11 @@ export type Raffles = {
       code: 6040;
       name: 'CompressedArgsNotProvided';
       msg: 'The compressed args were not provided';
+    },
+    {
+      code: 6041;
+      name: 'InvalidArgument';
+      msg: 'Invalid argument';
     }
   ];
 };
@@ -1671,59 +1585,22 @@ export const IDL: Raffles = {
           isMut: false,
           isSigner: false,
           isOptional: true,
-          docs: ['The prize master edition account.']
+          docs: ['The prize [`Metadata`] master edition account.']
         },
         {
           name: 'prizeMetadata',
           isMut: true,
           isSigner: false,
           isOptional: true,
-          docs: ['The prize metadata account.']
+          docs: ['The prize [`Metadata`] account.']
         },
         {
           name: 'prizeTokenRecord',
           isMut: true,
           isSigner: false,
-          isOptional: true
-        },
-        {
-          name: 'prizeMerkleTree',
-          isMut: true,
-          isSigner: false,
           isOptional: true,
           docs: [
-            'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeMerkleTreeAuthority',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
-            'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeLeafOwner',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
-            'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeLeafDelegate',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
-            'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
+            'The prize [`Metadata`] Token Record Account if the prize is a Programmable NFT.'
           ]
         },
         {
@@ -1732,7 +1609,15 @@ export const IDL: Raffles = {
           isSigner: false,
           isOptional: true,
           docs: [
-            'The source Token Account if the prize is not a Compressed NFT.'
+            'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
+            '',
+            'The source [`TokenAccount`] if the prize is not a Compressed NFT.'
           ]
         },
         {
@@ -1802,31 +1687,15 @@ export const IDL: Raffles = {
           docs: ['The Metaplex Token Auth Rules Program.']
         },
         {
-          name: 'bubblegumProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The Metaplex Bubblegum Program.']
-        },
-        {
-          name: 'accountCompressionProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The Account Compression Program.']
-        },
-        {
-          name: 'noOpProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The No Op Program.']
-        },
-        {
           name: 'rent',
           isMut: false,
           isSigner: false,
-          docs: ['The Rent Sysvar.']
+          docs: [
+            'The Metaplex Bubblegum Program.',
+            'The Account Compression Program.',
+            'The No Op Program.',
+            'The Rent Sysvar.'
+          ]
         },
         {
           name: 'instructions',
@@ -1982,51 +1851,21 @@ export const IDL: Raffles = {
           isOptional: true
         },
         {
-          name: 'prizeMerkleTree',
+          name: 'winnerTokenAccount',
           isMut: true,
           isSigner: false,
           isOptional: true,
           docs: [
             'The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeMerkleTreeAuthority',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
+            '',
             'The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeLeafOwner',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
+            '',
             'The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
-          ]
-        },
-        {
-          name: 'prizeLeafDelegate',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: [
+            '',
             'The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.',
-            ''
+            '',
+            "The winner's token account."
           ]
-        },
-        {
-          name: 'winnerTokenAccount',
-          isMut: true,
-          isSigner: false,
-          isOptional: true,
-          docs: ["The winner's token account."]
         },
         {
           name: 'winnerTokenRecord',
@@ -2094,31 +1933,15 @@ export const IDL: Raffles = {
           docs: ['The Metaplex Token Auth Rules Program.']
         },
         {
-          name: 'bubblegumProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The Metaplex Bubblegum Program.']
-        },
-        {
-          name: 'accountCompressionProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The Account Compression Program.']
-        },
-        {
-          name: 'noOpProgram',
-          isMut: false,
-          isSigner: false,
-          isOptional: true,
-          docs: ['The No Op Program.']
-        },
-        {
           name: 'rent',
           isMut: false,
           isSigner: false,
-          docs: ['The Rent Sysvar.']
+          docs: [
+            'The Metaplex Bubblegum Program.',
+            'The Account Compression Program.',
+            'The No Op Program.',
+            'The Rent Sysvar.'
+          ]
         },
         {
           name: 'instructions',
@@ -2950,6 +2773,11 @@ export const IDL: Raffles = {
       code: 6040,
       name: 'CompressedArgsNotProvided',
       msg: 'The compressed args were not provided'
+    },
+    {
+      code: 6041,
+      name: 'InvalidArgument',
+      msg: 'Invalid argument'
     }
   ]
 };

@@ -1,49 +1,25 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  AccountMeta,
   Keypair,
   PublicKey,
   SystemProgram,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
   SYSVAR_SLOT_HASHES_PUBKEY
 } from '@solana/web3.js';
 import { RafflesProgramClient } from '../client';
 import { PrizeType, RaffleState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
-import { deriveRaffleAddress, derivePrizeAddress } from '../utils/pda';
+import { deriveRaffleAddress } from '../utils/pda';
 import BN from 'bn.js';
 import { deriveConfigAddress } from '../utils/pda';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
-  Mint,
   TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
-import { MPL_TOKEN_AUTH_RULES_PROGRAM_ID } from '@metaplex-foundation/mpl-token-auth-rules';
 import { TransactionInstruction } from '@solana/web3.js';
-import {
-  fromWeb3JsPublicKey,
-  toWeb3JsPublicKey
-} from '@metaplex-foundation/umi-web3js-adapters';
-import { defaultPublicKey, isSome, some } from '@metaplex-foundation/umi';
-import {
-  findMasterEditionPda,
-  findMetadataPda,
-  findTokenRecordPda,
-  Metadata,
-  MPL_TOKEN_METADATA_PROGRAM_ID,
-  TokenStandard
-} from '@metaplex-foundation/mpl-token-metadata';
-import {
-  ConcurrentMerkleTreeAccount,
-  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID
-} from '@solana/spl-account-compression';
-import {
-  ReadApiAsset,
-  GetAssetProofRpcResponse
-} from '@metaplex-foundation/mpl-bubblegum';
+import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
+import { ReadApiAsset } from '@metaplex-foundation/mpl-bubblegum';
 import { ConfigAccount } from './config';
 import { createAddPrizeInstruction } from '../instructions';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
@@ -200,7 +176,7 @@ export class RaffleAccount {
   }
 
   /**
-   * Buys tickets for this raffle. .
+   * Buys tickets for this Raffle.
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */
@@ -208,9 +184,7 @@ export class RaffleAccount {
     amount: BN,
     prizeType: PrizeType,
     metadataAccount?: Metadata,
-    asset?: ReadApiAsset,
-    merkleTree?: ConcurrentMerkleTreeAccount,
-    assetProof?: GetAssetProofRpcResponse
+    asset?: ReadApiAsset
   ): Promise<{
     accounts: PublicKey[];
     ixs: TransactionInstruction[];
@@ -222,15 +196,12 @@ export class RaffleAccount {
       this.prizes,
       amount,
       prizeType,
-      metadataAccount,
-      asset,
-      merkleTree,
-      assetProof
+      metadataAccount
     );
   }
 
   /**
-   * Buys tickets for this raffle. .
+   * Buys tickets for this Raffle.
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
    */

@@ -1,5 +1,4 @@
 import {
-  AccountMeta,
   Keypair,
   PublicKey,
   SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -19,13 +18,6 @@ import {
   findMetadataPda,
   findTokenRecordPda
 } from '@metaplex-foundation/mpl-token-metadata';
-import {
-  ReadApiAsset,
-  GetAssetProofRpcResponse,
-  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID
-} from '@metaplex-foundation/mpl-bubblegum';
-import { ConcurrentMerkleTreeAccount } from '@solana/spl-account-compression';
 import { defaultPublicKey, isSome } from '@metaplex-foundation/umi';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -44,16 +36,8 @@ const processInstructionAccounts = async (
   sourceOwner: PublicKey,
   destinationOwner: PublicKey,
   isClaim: boolean,
-  metadataAccount?: Metadata,
-  asset?: ReadApiAsset,
-  merkleTree?: ConcurrentMerkleTreeAccount,
-  assetProof?: GetAssetProofRpcResponse
+  metadataAccount?: Metadata
 ) => {
-  if (metadataAccount && (assetProof || merkleTree)) {
-    throw new Error(
-      'Invalid arguments. `metadataAccount` cannot be passed for compressed NFTs.'
-    );
-  }
   // checks for metadata account existence
   if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
     const tokenStandard = metadataAccount.tokenStandard.value;
@@ -152,14 +136,14 @@ const processInstructionAccounts = async (
   }
 
   // if we get in here we know for sure that this is a compressed nft
-  if (merkleTree && assetProof) {
-    accounts.prizeMerkleTree = asset.compression.tree;
-    accounts.prizeMerkleTreeAuthority = merkleTree.getAuthority();
-    accounts.prizeLeafDelegate = destinationOwner;
-    accounts.prizeLeafOwner = destinationOwner;
-    accounts.noOpProgram = SPL_NOOP_PROGRAM_ID;
-    accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
-  }
+  // if (merkleTree && assetProof) {
+  //   accounts.prizeMerkleTree = asset.compression.tree;
+  //   accounts.prizeMerkleTreeAuthority = merkleTree.getAuthority();
+  //   accounts.prizeLeafDelegate = destinationOwner;
+  //   accounts.prizeLeafOwner = destinationOwner;
+  //   accounts.noOpProgram = SPL_NOOP_PROGRAM_ID;
+  //   accounts.accountCompressionProgram = SPL_ACCOUNT_COMPRESSION_PROGRAM_ID;
+  // }
   return accounts;
 };
 
@@ -169,10 +153,7 @@ export const createAddPrizeInstruction = async (
   prizeIndex: number,
   amount: BN,
   prizeType: PrizeType,
-  metadataAccount?: Metadata,
-  asset?: ReadApiAsset,
-  merkleTree?: ConcurrentMerkleTreeAccount,
-  assetProof?: GetAssetProofRpcResponse
+  metadataAccount?: Metadata
 ): Promise<{
   accounts: PublicKey[];
   ixs: TransactionInstruction[];
@@ -190,10 +171,6 @@ export const createAddPrizeInstruction = async (
       prizeEdition: null,
       prizeMetadata: null,
       prizeTokenRecord: null,
-      prizeMerkleTree: null,
-      prizeMerkleTreeAuthority: null,
-      prizeLeafOwner: null,
-      prizeLeafDelegate: null,
       sourceTokenAccount: null,
       sourceTokenRecord: null,
       authorizationRules: null,
@@ -204,62 +181,56 @@ export const createAddPrizeInstruction = async (
       associatedTokenProgram: null,
       metadataProgram: null,
       authRulesProgram: null,
-      bubblegumProgram: null,
-      accountCompressionProgram: null,
-      noOpProgram: null,
       rent: SYSVAR_RENT_PUBKEY,
       instructions: null
     },
     client.walletPubkey,
     prize,
     false,
-    metadataAccount,
-    asset,
-    merkleTree,
-    assetProof
+    metadataAccount
   );
 
-  const prizeTypeArgs = assetProof
-    ? {
-        prizeType: {
-          compressed: {
-            root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-            dataHash: [
-              ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-            ],
-            creatorHash: [
-              ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
-            ],
-            nonce: asset.compression.leaf_id,
-            index: asset.compression.leaf_id
-          }
-        }
-      }
-    : prizeType;
+  // const prizeTypeArgs = assetProof
+  //   ? {
+  //       prizeType: {
+  //         compressed: {
+  //           root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+  //           dataHash: [
+  //             ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+  //           ],
+  //           creatorHash: [
+  //             ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
+  //           ],
+  //           nonce: asset.compression.leaf_id,
+  //           index: asset.compression.leaf_id
+  //         }
+  //       }
+  //     }
+  //   : prizeType;
 
   const ix = await client.methods
     .addPrize({
       prizeIndex,
       amount,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prizeType: prizeTypeArgs as any
+      prizeType: prizeType as any
     })
     .accountsStrict(accounts)
     .instruction();
 
-  if (merkleTree) {
-    // parse the list of proof addresses into a valid AccountMeta[]
-    const canopyDepth = merkleTree.getCanopyDepth();
-    const proof: AccountMeta[] = assetProof.proof
-      // eslint-disable-next-line no-extra-boolean-cast
-      .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
-      .map((node: string) => ({
-        pubkey: new PublicKey(node),
-        isSigner: false,
-        isWritable: false
-      }));
-    ix.keys.push(...proof);
-  }
+  // if (merkleTree) {
+  //   // parse the list of proof addresses into a valid AccountMeta[]
+  //   const canopyDepth = merkleTree.getCanopyDepth();
+  //   const proof: AccountMeta[] = assetProof.proof
+  //     // eslint-disable-next-line no-extra-boolean-cast
+  //     .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
+  //     .map((node: string) => ({
+  //       pubkey: new PublicKey(node),
+  //       isSigner: false,
+  //       isWritable: false
+  //     }));
+  //   ix.keys.push(...proof);
+  // }
 
   return {
     accounts: [prize],
@@ -278,10 +249,7 @@ export const createClaimPrizeInstruction = async (
   payer: PublicKey,
   prizeIndex: number,
   ticketIndex: number,
-  asset?: ReadApiAsset,
-  metadataAccount?: Metadata,
-  merkleTree?: ConcurrentMerkleTreeAccount,
-  assetProof?: GetAssetProofRpcResponse
+  metadataAccount?: Metadata
 ): Promise<{
   accounts: PublicKey[];
   ixs: TransactionInstruction[];
@@ -298,10 +266,6 @@ export const createClaimPrizeInstruction = async (
       prizeEdition: null,
       prizeMetadata: null,
       prizeTokenRecord: null,
-      prizeMerkleTree: null,
-      prizeMerkleTreeAuthority: null,
-      prizeLeafOwner: null,
-      prizeLeafDelegate: null,
       winnerTokenAccount: null,
       winnerTokenRecord: null,
       authorizationRules: null,
@@ -313,54 +277,48 @@ export const createClaimPrizeInstruction = async (
       associatedTokenProgram: null,
       metadataProgram: null,
       authRulesProgram: null,
-      bubblegumProgram: null,
-      accountCompressionProgram: null,
-      noOpProgram: null,
       rent: SYSVAR_RENT_PUBKEY,
       instructions: null
     },
     prize,
     winner,
     true,
-    metadataAccount,
-    asset,
-    merkleTree,
-    assetProof
+    metadataAccount
   );
 
-  const compressedArgs =
-    merkleTree && assetProof
-      ? {
-          root: [...new PublicKey(assetProof.root.trim()).toBytes()],
-          dataHash: [
-            ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
-          ],
-          creatorHash: [
-            ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
-          ],
-          nonce: new BN(asset.compression.leaf_id),
-          index: asset.compression.leaf_id
-        }
-      : null;
+  // const compressedArgs =
+  //   merkleTree && assetProof
+  //     ? {
+  //         root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+  //         dataHash: [
+  //           ...new PublicKey(asset.compression.data_hash.trim()).toBytes()
+  //         ],
+  //         creatorHash: [
+  //           ...new PublicKey(asset.compression.creator_hash.trim()).toBytes()
+  //         ],
+  //         nonce: new BN(asset.compression.leaf_id),
+  //         index: asset.compression.leaf_id
+  //       }
+  //     : null;
 
   const ix = await client.methods
-    .claimPrize(prizeIndex, ticketIndex, compressedArgs)
+    .claimPrize(prizeIndex, ticketIndex, null)
     .accountsStrict(accounts)
     .instruction();
 
-  if (merkleTree) {
-    // parse the list of proof addresses into a valid AccountMeta[]
-    const canopyDepth = merkleTree.getCanopyDepth();
-    const proof: AccountMeta[] = assetProof.proof
-      // eslint-disable-next-line no-extra-boolean-cast
-      .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
-      .map((node: string) => ({
-        pubkey: new PublicKey(node),
-        isSigner: false,
-        isWritable: false
-      }));
-    ix.keys.push(...proof);
-  }
+  // if (merkleTree) {
+  //   // parse the list of proof addresses into a valid AccountMeta[]
+  //   const canopyDepth = merkleTree.getCanopyDepth();
+  //   const proof: AccountMeta[] = assetProof.proof
+  //     // eslint-disable-next-line no-extra-boolean-cast
+  //     .slice(0, assetProof.proof.length - (!!canopyDepth ? canopyDepth : 0))
+  //     .map((node: string) => ({
+  //       pubkey: new PublicKey(node),
+  //       isSigner: false,
+  //       isWritable: false
+  //     }));
+  //   ix.keys.push(...proof);
+  // }
 
   return {
     accounts: [],

@@ -25,11 +25,11 @@ export class EntrantsAccount {
   }
 
   /**
-   * Loads all existing Loans, if a Collection Lending Profile is specified, only Loans associated to it will be loaded.
-   * @param client The Lending Client instance.
-   * @param address The address of the Loan to load.
+   * Loads the given Entrants account.
+   * @param client The Raffles Client instance.
+   * @param address The address of the Entrants account to load.
    * @param onStateUpdateHandler A state update handler.
-   * @returns A promise which may resolve a Loan.
+   * @returns A promise which may resolve an EntrantsAccount.
    */
   static async load(
     client: RafflesProgramClient,

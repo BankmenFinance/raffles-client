@@ -3,12 +3,7 @@ import { RafflesProgramClient } from '../client';
 import { PrizeState } from '../types/on-chain';
 import { StateUpdateHandler } from '../types';
 import { RaffleAccount } from './raffle';
-import { ConcurrentMerkleTreeAccount } from '@solana/spl-account-compression';
 import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
-import {
-  GetAssetProofRpcResponse,
-  ReadApiAsset
-} from '@metaplex-foundation/mpl-bubblegum';
 import { createClaimPrizeInstruction } from '../instructions';
 
 /**
@@ -115,10 +110,7 @@ export class PrizeAccount {
   async claimPrize(
     raffle: RaffleAccount,
     ticketIndex: number,
-    asset?: ReadApiAsset,
-    metadataAccount?: Metadata,
-    merkleTree?: ConcurrentMerkleTreeAccount,
-    assetProof?: GetAssetProofRpcResponse
+    metadataAccount?: Metadata
   ): Promise<{
     accounts: PublicKey[];
     ixs: TransactionInstruction[];
@@ -134,10 +126,7 @@ export class PrizeAccount {
       this.client.walletPubkey,
       this.state.prizeIndex,
       ticketIndex,
-      asset,
-      metadataAccount,
-      merkleTree,
-      assetProof
+      metadataAccount
     );
   }
 
@@ -151,10 +140,7 @@ export class PrizeAccount {
     raffle: RaffleAccount,
     winner: PublicKey,
     ticketIndex: number,
-    asset?: ReadApiAsset,
-    metadataAccount?: Metadata,
-    merkleTree?: ConcurrentMerkleTreeAccount,
-    assetProof?: GetAssetProofRpcResponse
+    metadataAccount?: Metadata
   ): Promise<{
     accounts: PublicKey[];
     ixs: TransactionInstruction[];
@@ -170,10 +156,7 @@ export class PrizeAccount {
       this.client.walletPubkey,
       this.state.prizeIndex,
       ticketIndex,
-      asset,
-      metadataAccount,
-      merkleTree,
-      assetProof
+      metadataAccount
     );
   }
 
