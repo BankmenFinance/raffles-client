@@ -24,7 +24,7 @@ export const CONFIGS: { [key in Cluster]: Config } = {
   'mainnet-beta': {
     RPC_ENDPOINT:
       'https://bankmen-main71f-f62a.mainnet.rpcpool.com/f6f0b0ad-6b0f-4a33-95eb-8944a9474e6f',
-    PROGRAM_ID: new PublicKey('BMfi6hbCSpTS962EZjwaa6bRvy2izUCmZrpBMuhJ1BUW'),
+    PROGRAM_ID: new PublicKey('BMrafdefSrPWCwxgiKsRURz7uM3vd8maZFga6qCQDXBB'),
     HISTORY_API_GRAPHQL: 'https://gbg-lending.hasura.app/v1/graphql'
   }
 };
