@@ -232,7 +232,7 @@
                     "isSigner": false,
                     "isOptional": true,
                     "docs": [
-                        "The prize master edition account."
+                        "The prize [`Metadata`] master edition account."
                     ]
                 },
                 {
@@ -241,53 +241,16 @@
                     "isSigner": false,
                     "isOptional": true,
                     "docs": [
-                        "The prize metadata account."
+                        "The prize [`Metadata`] account."
                     ]
                 },
                 {
                     "name": "prizeTokenRecord",
                     "isMut": true,
                     "isSigner": false,
-                    "isOptional": true
-                },
-                {
-                    "name": "prizeMerkleTree",
-                    "isMut": true,
-                    "isSigner": false,
                     "isOptional": true,
                     "docs": [
-                        "The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeMerkleTreeAuthority",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeLeafOwner",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeLeafDelegate",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
+                        "The prize [`Metadata`] Token Record Account if the prize is a Programmable NFT."
                     ]
                 },
                 {
@@ -296,7 +259,15 @@
                     "isSigner": false,
                     "isOptional": true,
                     "docs": [
-                        "The source Token Account if the prize is not a Compressed NFT."
+                        "The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The source [`TokenAccount`] if the prize is not a Compressed NFT."
                     ]
                 },
                 {
@@ -380,37 +351,13 @@
                     ]
                 },
                 {
-                    "name": "bubblegumProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The Metaplex Bubblegum Program."
-                    ]
-                },
-                {
-                    "name": "accountCompressionProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The Account Compression Program."
-                    ]
-                },
-                {
-                    "name": "noOpProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The No Op Program."
-                    ]
-                },
-                {
                     "name": "rent",
                     "isMut": false,
                     "isSigner": false,
                     "docs": [
+                        "The Metaplex Bubblegum Program.",
+                        "The Account Compression Program.",
+                        "The No Op Program.",
                         "The Rent Sysvar."
                     ]
                 },
@@ -597,51 +544,19 @@
                     "isOptional": true
                 },
                 {
-                    "name": "prizeMerkleTree",
-                    "isMut": true,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeMerkleTreeAuthority",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeLeafOwner",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
-                    "name": "prizeLeafDelegate",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
-                        ""
-                    ]
-                },
-                {
                     "name": "winnerTokenAccount",
                     "isMut": true,
                     "isSigner": false,
                     "isOptional": true,
                     "docs": [
+                        "The [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The authority of the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The owner of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
+                        "The delegate of the leaf in the [`Bubblegum`] Concurrent Merkle Tree Account if the prize is a Compressed NFT.",
+                        "",
                         "The winner's token account."
                     ]
                 },
@@ -663,7 +578,7 @@
                 },
                 {
                     "name": "creator",
-                    "isMut": false,
+                    "isMut": true,
                     "isSigner": false
                 },
                 {
@@ -721,37 +636,13 @@
                     ]
                 },
                 {
-                    "name": "bubblegumProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The Metaplex Bubblegum Program."
-                    ]
-                },
-                {
-                    "name": "accountCompressionProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The Account Compression Program."
-                    ]
-                },
-                {
-                    "name": "noOpProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "isOptional": true,
-                    "docs": [
-                        "The No Op Program."
-                    ]
-                },
-                {
                     "name": "rent",
                     "isMut": false,
                     "isSigner": false,
                     "docs": [
+                        "The Metaplex Bubblegum Program.",
+                        "The Account Compression Program.",
+                        "The No Op Program.",
                         "The Rent Sysvar."
                     ]
                 },
@@ -1660,6 +1551,11 @@
             "code": 6040,
             "name": "CompressedArgsNotProvided",
             "msg": "The compressed args were not provided"
+        },
+        {
+            "code": 6041,
+            "name": "InvalidArgument",
+            "msg": "Invalid argument"
         }
     ]
 }

@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 anchor_gen::generate_cpi_interface!(idl_path = "idl.json");
 
 #[cfg(feature = "mainnet-beta")]
-declare_id!("8H35HKgE2YXbvV1aoU4954jnTuMm88yjGRt1giUgxpwu");
+declare_id!("BMrafdefSrPWCwxgiKsRURz7uM3vd8maZFga6qCQDXBB");
 #[cfg(not(feature = "mainnet-beta"))]
 declare_id!("8H35HKgE2YXbvV1aoU4954jnTuMm88yjGRt1giUgxpwu");
 
