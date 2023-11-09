@@ -1,5 +1,5 @@
 export type Raffles = {
-  version: '0.1.0';
+  version: '0.1.1';
   name: 'raffles';
   instructions: [
     {
@@ -393,6 +393,11 @@ export type Raffles = {
           isMut: true;
           isSigner: false;
           docs: ['The [`Raffle`] for which we are going to reveal a winner.'];
+        },
+        {
+          name: 'entrants';
+          isMut: false;
+          isSigner: false;
         },
         {
           name: 'slotHashes';
@@ -1255,7 +1260,7 @@ export type Raffles = {
     {
       code: 6015;
       name: 'OnlyCreatorCanClaimNoEntrantRafflePrizes';
-      msg: 'Only the creator can calin no entrant raffle prizes';
+      msg: 'Only the creator can claim no entrant raffle prizes';
     },
     {
       code: 6016;
@@ -1386,12 +1391,22 @@ export type Raffles = {
       code: 6041;
       name: 'InvalidArgument';
       msg: 'Invalid argument';
+    },
+    {
+      code: 6042;
+      name: 'OnlyCreatorCanClaimInvalidWinnerDraw';
+      msg: 'Only the creator can claim invalid winner draw';
+    },
+    {
+      code: 6043;
+      name: 'InvalidWinner';
+      msg: 'Invalid winner';
     }
   ];
 };
 
 export const IDL: Raffles = {
-  version: '0.1.0',
+  version: '0.1.1',
   name: 'raffles',
   instructions: [
     {
@@ -1785,6 +1800,11 @@ export const IDL: Raffles = {
           isMut: true,
           isSigner: false,
           docs: ['The [`Raffle`] for which we are going to reveal a winner.']
+        },
+        {
+          name: 'entrants',
+          isMut: false,
+          isSigner: false
         },
         {
           name: 'slotHashes',
@@ -2647,7 +2667,7 @@ export const IDL: Raffles = {
     {
       code: 6015,
       name: 'OnlyCreatorCanClaimNoEntrantRafflePrizes',
-      msg: 'Only the creator can calin no entrant raffle prizes'
+      msg: 'Only the creator can claim no entrant raffle prizes'
     },
     {
       code: 6016,
@@ -2778,6 +2798,16 @@ export const IDL: Raffles = {
       code: 6041,
       name: 'InvalidArgument',
       msg: 'Invalid argument'
+    },
+    {
+      code: 6042,
+      name: 'OnlyCreatorCanClaimInvalidWinnerDraw',
+      msg: 'Only the creator can claim invalid winner draw'
+    },
+    {
+      code: 6043,
+      name: 'InvalidWinner',
+      msg: 'Invalid winner'
     }
   ]
 };
