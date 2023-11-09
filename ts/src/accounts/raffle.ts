@@ -255,6 +255,7 @@ export class RaffleAccount {
       .revealWinners()
       .accountsStrict({
         raffle: this.address,
+        entrants: this.entrants,
         slotHashes: SYSVAR_SLOT_HASHES_PUBKEY
       })
       .instruction();
