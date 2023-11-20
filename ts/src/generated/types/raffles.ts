@@ -1,5 +1,5 @@
 export type Raffles = {
-  version: '0.1.1';
+  version: '0.1.2';
   name: 'raffles';
   instructions: [
     {
@@ -1401,12 +1401,17 @@ export type Raffles = {
       code: 6043;
       name: 'InvalidWinner';
       msg: 'Invalid winner';
+    },
+    {
+      code: 6044;
+      name: 'CreatorCannotBuyIntoOwnRaffle';
+      msg: "The creator cannot buy into it's own raffle";
     }
   ];
 };
 
 export const IDL: Raffles = {
-  version: '0.1.1',
+  version: '0.1.2',
   name: 'raffles',
   instructions: [
     {
@@ -2808,6 +2813,11 @@ export const IDL: Raffles = {
       code: 6043,
       name: 'InvalidWinner',
       msg: 'Invalid winner'
+    },
+    {
+      code: 6044,
+      name: 'CreatorCannotBuyIntoOwnRaffle',
+      msg: "The creator cannot buy into it's own raffle"
     }
   ]
 };

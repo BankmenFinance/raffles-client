@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "raffles",
   "instructions": [
     {
@@ -1571,6 +1571,11 @@
       "code": 6043,
       "name": "InvalidWinner",
       "msg": "Invalid winner"
+    },
+    {
+      "code": 6044,
+      "name": "CreatorCannotBuyIntoOwnRaffle",
+      "msg": "The creator cannot buy into it's own raffle"
     }
   ]
 }
