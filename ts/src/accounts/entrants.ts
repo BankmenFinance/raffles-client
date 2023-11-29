@@ -71,15 +71,29 @@ export class EntrantsAccount {
   }
 
   /**
-   * Gets the entrant at the given index.
-   * @param index The index of the entry.
+   * Gets the entrant at the given index. This method filters out unsold tickets.
+   * @param index The index of the entrant.
    * @returns The Public Key of the entrant.
    */
   getEntrant(index: number): PublicKey {
-    const startIndex = 8 + 4 + 4 + PUBLIC_KEY_LENGTH * index;
-    return new PublicKey(
-      this.data.data.subarray(startIndex, startIndex + PUBLIC_KEY_LENGTH)
-    );
+    let i = 0;
+
+    for (let idx = 0; idx < this.max; idx++) {
+      const startIndex = 8 + 4 + 4 + PUBLIC_KEY_LENGTH * idx;
+      const entrant = new PublicKey(
+        this.data.data.subarray(startIndex, startIndex + PUBLIC_KEY_LENGTH)
+      );
+
+      if (!entrant.equals(PublicKey.default)) {
+        if (i == index) {
+          return entrant;
+        } else {
+          i = i + 1;
+        }
+      }
+    }
+
+    return PublicKey.default;
   }
 
   /**
