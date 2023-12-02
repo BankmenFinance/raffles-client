@@ -1,5 +1,5 @@
 export type Raffles = {
-  version: '0.1.2';
+  version: '0.1.3';
   name: 'raffles';
   instructions: [
     {
@@ -691,6 +691,73 @@ export type Raffles = {
         }
       ];
       args: [];
+    },
+    {
+      name: 'cancelRaffle';
+      accounts: [
+        {
+          name: 'raffle';
+          isMut: true;
+          isSigner: false;
+          docs: [
+            'The [`Raffle`] Account for which we are going to add a prize.'
+          ];
+        },
+        {
+          name: 'entrants';
+          isMut: false;
+          isSigner: false;
+          docs: [
+            'The [`Entrants`] Account which contains ticket buyers for a certain [`Raffle`].'
+          ];
+        },
+        {
+          name: 'creator';
+          isMut: false;
+          isSigner: true;
+          docs: ['The creator of the [`Raffle`].'];
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'editRaffle';
+      accounts: [
+        {
+          name: 'raffle';
+          isMut: false;
+          isSigner: false;
+          docs: ['The [`Raffle`] Account we are going to edit.'];
+        },
+        {
+          name: 'entrants';
+          isMut: true;
+          isSigner: false;
+          docs: [
+            'The [`Entrants`] Account which contains ticket buyers for a certain [`Raffle`].'
+          ];
+        },
+        {
+          name: 'creator';
+          isMut: false;
+          isSigner: true;
+          docs: ['The [Raffle] creator.'];
+        }
+      ];
+      args: [
+        {
+          name: 'max';
+          type: {
+            option: 'u32';
+          };
+        },
+        {
+          name: 'ticketPrice';
+          type: {
+            option: 'u64';
+          };
+        }
+      ];
     }
   ];
   accounts: [
@@ -750,9 +817,14 @@ export type Raffles = {
             type: 'u8';
           },
           {
+            name: 'canceled';
+            docs: ['Whether the raffle has been canceled or not.'];
+            type: 'bool';
+          },
+          {
             name: 'padding';
             type: {
-              array: ['u8', 7];
+              array: ['u8', 6];
             };
           },
           {
@@ -1059,6 +1131,40 @@ export type Raffles = {
         {
           name: 'creator';
           type: 'publicKey';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'RaffleCancelled';
+      fields: [
+        {
+          name: 'raffle';
+          type: 'publicKey';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'RaffleEdit';
+      fields: [
+        {
+          name: 'raffle';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'max';
+          type: {
+            option: 'u32';
+          };
+          index: false;
+        },
+        {
+          name: 'ticketPrice';
+          type: {
+            option: 'u64';
+          };
           index: false;
         }
       ];
@@ -1406,12 +1512,27 @@ export type Raffles = {
       code: 6044;
       name: 'CreatorCannotBuyIntoOwnRaffle';
       msg: "The creator cannot buy into it's own raffle";
+    },
+    {
+      code: 6045;
+      name: 'CannotEditRaffleWithTicketsPurchased';
+      msg: 'Cannot edit a raffle after tickets have been purchased';
+    },
+    {
+      code: 6046;
+      name: 'CannotCancelRaffleWithTicketsPurchased';
+      msg: 'Cannot cancel a raffle after tickets have been purchased';
+    },
+    {
+      code: 6047;
+      name: 'RaffleCanceled';
+      msg: 'The raffle has been canceled';
     }
   ];
 };
 
 export const IDL: Raffles = {
-  version: '0.1.2',
+  version: '0.1.3',
   name: 'raffles',
   instructions: [
     {
@@ -2103,6 +2224,73 @@ export const IDL: Raffles = {
         }
       ],
       args: []
+    },
+    {
+      name: 'cancelRaffle',
+      accounts: [
+        {
+          name: 'raffle',
+          isMut: true,
+          isSigner: false,
+          docs: [
+            'The [`Raffle`] Account for which we are going to add a prize.'
+          ]
+        },
+        {
+          name: 'entrants',
+          isMut: false,
+          isSigner: false,
+          docs: [
+            'The [`Entrants`] Account which contains ticket buyers for a certain [`Raffle`].'
+          ]
+        },
+        {
+          name: 'creator',
+          isMut: false,
+          isSigner: true,
+          docs: ['The creator of the [`Raffle`].']
+        }
+      ],
+      args: []
+    },
+    {
+      name: 'editRaffle',
+      accounts: [
+        {
+          name: 'raffle',
+          isMut: false,
+          isSigner: false,
+          docs: ['The [`Raffle`] Account we are going to edit.']
+        },
+        {
+          name: 'entrants',
+          isMut: true,
+          isSigner: false,
+          docs: [
+            'The [`Entrants`] Account which contains ticket buyers for a certain [`Raffle`].'
+          ]
+        },
+        {
+          name: 'creator',
+          isMut: false,
+          isSigner: true,
+          docs: ['The [Raffle] creator.']
+        }
+      ],
+      args: [
+        {
+          name: 'max',
+          type: {
+            option: 'u32'
+          }
+        },
+        {
+          name: 'ticketPrice',
+          type: {
+            option: 'u64'
+          }
+        }
+      ]
     }
   ],
   accounts: [
@@ -2162,9 +2350,14 @@ export const IDL: Raffles = {
             type: 'u8'
           },
           {
+            name: 'canceled',
+            docs: ['Whether the raffle has been canceled or not.'],
+            type: 'bool'
+          },
+          {
             name: 'padding',
             type: {
-              array: ['u8', 7]
+              array: ['u8', 6]
             }
           },
           {
@@ -2471,6 +2664,40 @@ export const IDL: Raffles = {
         {
           name: 'creator',
           type: 'publicKey',
+          index: false
+        }
+      ]
+    },
+    {
+      name: 'RaffleCancelled',
+      fields: [
+        {
+          name: 'raffle',
+          type: 'publicKey',
+          index: false
+        }
+      ]
+    },
+    {
+      name: 'RaffleEdit',
+      fields: [
+        {
+          name: 'raffle',
+          type: 'publicKey',
+          index: false
+        },
+        {
+          name: 'max',
+          type: {
+            option: 'u32'
+          },
+          index: false
+        },
+        {
+          name: 'ticketPrice',
+          type: {
+            option: 'u64'
+          },
           index: false
         }
       ]
@@ -2818,6 +3045,21 @@ export const IDL: Raffles = {
       code: 6044,
       name: 'CreatorCannotBuyIntoOwnRaffle',
       msg: "The creator cannot buy into it's own raffle"
+    },
+    {
+      code: 6045,
+      name: 'CannotEditRaffleWithTicketsPurchased',
+      msg: 'Cannot edit a raffle after tickets have been purchased'
+    },
+    {
+      code: 6046,
+      name: 'CannotCancelRaffleWithTicketsPurchased',
+      msg: 'Cannot cancel a raffle after tickets have been purchased'
+    },
+    {
+      code: 6047,
+      name: 'RaffleCanceled',
+      msg: 'The raffle has been canceled'
     }
   ]
 };

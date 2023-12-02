@@ -176,6 +176,59 @@ export class RaffleAccount {
   }
 
   /**
+   * Edits this Raffle, if no tickets have been purchased so far.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
+   */
+  async edit(
+    max?: number,
+    ticketPrice?: BN
+  ): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
+    const ix = await this.client.methods
+      .editRaffle(max, ticketPrice)
+      .accountsStrict({
+        raffle: this.address,
+        entrants: this.state.entrants,
+        creator: this.client.walletPubkey
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
+  }
+
+  /**
+   * Cancels this Raffle, if no tickets have been purchased so far.
+   * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
+   */
+  async cancel(): Promise<{
+    accounts: PublicKey[];
+    ixs: TransactionInstruction[];
+    signers: Keypair[];
+  }> {
+    const ix = await this.client.methods
+      .cancelRaffle()
+      .accountsStrict({
+        raffle: this.address,
+        entrants: this.state.entrants,
+        creator: this.client.walletPubkey
+      })
+      .instruction();
+
+    return {
+      accounts: [],
+      ixs: [ix],
+      signers: []
+    };
+  }
+
+  /**
    * Buys tickets for this Raffle.
    * @param client The amount of tickets to buy.
    * @returns A promise which may resolve the new accounts and necessary instructions and signers to submit a transaction.
