@@ -27,6 +27,25 @@ impl std::fmt::Debug for RaffleClosed {
             .finish()
     }
 }
+
+impl std::fmt::Debug for RaffleEdit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RaffleEdit")
+            .field("raffle", &self.raffle)
+            .field("max", &self.max)
+            .field("ticket_price", &self.ticket_price)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for RaffleCancelled {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RaffleCancelled")
+            .field("raffle", &self.raffle)
+            .finish()
+    }
+}
+
 impl std::fmt::Debug for TicketBought {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TicketsBought")
