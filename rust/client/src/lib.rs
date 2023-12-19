@@ -15,6 +15,7 @@ impl std::fmt::Debug for RaffleCreated {
             .field("max_entrants", &self.max_entrants)
             .field("end_timestamp", &self.end_timestamp)
             .field("ticket_price", &self.ticket_price)
+            .field("proceeds_mint", &self.proceeds_mint)
             .finish()
     }
 }
