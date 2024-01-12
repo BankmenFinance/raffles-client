@@ -39,39 +39,126 @@ const processInstructionAccounts = async (
   metadataAccount?: Metadata
 ) => {
   // checks for metadata account existence
-  if (metadataAccount && isSome(metadataAccount.tokenStandard)) {
-    const tokenStandard = metadataAccount.tokenStandard.value;
-    // derive token account pdas
-    const sourceTokenAccount = await getAssociatedTokenAddress(
-      toWeb3JsPublicKey(metadataAccount.mint),
-      sourceOwner,
-      true
-    );
-    const destinationTokenAccount = await getAssociatedTokenAddress(
-      toWeb3JsPublicKey(metadataAccount.mint),
-      destinationOwner,
-      true
-    );
+  if (metadataAccount) {
+    if (isSome(metadataAccount.tokenStandard)) {
+      const tokenStandard = metadataAccount.tokenStandard.value;
+      // derive token account pdas
+      const sourceTokenAccount = await getAssociatedTokenAddress(
+        toWeb3JsPublicKey(metadataAccount.mint),
+        sourceOwner,
+        true
+      );
+      const destinationTokenAccount = await getAssociatedTokenAddress(
+        toWeb3JsPublicKey(metadataAccount.mint),
+        destinationOwner,
+        true
+      );
 
-    accounts.prizeMint = metadataAccount.mint;
-    // check if it is a claim
-    if (isClaim) {
-      // if it is a claim, prize gets transferred from prize to winner
-      accounts.prizeTokenAccount = sourceTokenAccount;
-      accounts.winnerTokenAccount = destinationTokenAccount;
+      accounts.prizeMint = metadataAccount.mint;
+      // check if it is a claim
+      if (isClaim) {
+        // if it is a claim, prize gets transferred from prize to winner
+        accounts.prizeTokenAccount = sourceTokenAccount;
+        accounts.winnerTokenAccount = destinationTokenAccount;
+      } else {
+        // if it is not a claim, prize gets transferred from source (creator) to prize
+        accounts.sourceTokenAccount = sourceTokenAccount;
+        accounts.prizeTokenAccount = destinationTokenAccount;
+      }
+
+      // check if it is legacy nft | programmable nft
+      if (
+        tokenStandard === TokenStandard.NonFungible ||
+        tokenStandard === TokenStandard.NonFungibleEdition ||
+        tokenStandard === TokenStandard.ProgrammableNonFungible ||
+        tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
+      ) {
+        const [metadata] = findMetadataPda(client.umi, {
+          mint: metadataAccount.mint
+        });
+
+        const [edition] = findMasterEditionPda(client.umi, {
+          mint: metadataAccount.mint
+        });
+
+        accounts.prizeEdition = edition;
+        accounts.prizeMetadata = metadata;
+
+        accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
+        accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
+      }
+
+      // check if it is programmable nft
+      if (
+        tokenStandard === TokenStandard.ProgrammableNonFungible ||
+        tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
+      ) {
+        // derive token record pdas
+        const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(sourceTokenAccount)
+        });
+        const [destinationTokenRecord] = findTokenRecordPda(client.umi, {
+          mint: metadataAccount.mint,
+          token: fromWeb3JsPublicKey(destinationTokenAccount)
+        });
+        // check if it is a claim
+        if (isClaim) {
+          // if it is a claim, prize gets transferred from prize to winner
+          accounts.prizeTokenRecord = sourceTokenRecord;
+          accounts.winnerTokenRecord = destinationTokenRecord;
+        } else {
+          // if it is not a claim, prize gets transferred from source (creator) to prize
+          accounts.sourceTokenRecord = sourceTokenRecord;
+          accounts.prizeTokenRecord = destinationTokenRecord;
+        }
+      }
+      let authorizationRules = null;
+
+      // check if the programmable nft has a rule set
+      if (
+        isSome(metadataAccount.programmableConfig) &&
+        isSome(metadataAccount.programmableConfig.value.ruleSet) &&
+        defaultPublicKey().toString() !==
+          metadataAccount.programmableConfig.value.ruleSet.value.toString()
+      ) {
+        authorizationRules =
+          metadataAccount.programmableConfig.value.ruleSet.value;
+      }
+      // set the authorization rules account we tried to fetch before
+      // if it is null, no problem, means it shouldn't be there anyway
+      accounts.authorizationRules = authorizationRules;
+      if (authorizationRules) {
+        accounts.authRulesProgram = MPL_TOKEN_AUTH_RULES_PROGRAM_ID;
+      }
+
+      accounts.tokenProgram = TOKEN_PROGRAM_ID;
+      accounts.associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
     } else {
-      // if it is not a claim, prize gets transferred from source (creator) to prize
-      accounts.sourceTokenAccount = sourceTokenAccount;
-      accounts.prizeTokenAccount = destinationTokenAccount;
-    }
+      // derive token account pdas
+      const sourceTokenAccount = await getAssociatedTokenAddress(
+        toWeb3JsPublicKey(metadataAccount.mint),
+        sourceOwner,
+        true
+      );
+      const destinationTokenAccount = await getAssociatedTokenAddress(
+        toWeb3JsPublicKey(metadataAccount.mint),
+        destinationOwner,
+        true
+      );
 
-    // check if it is legacy nft | programmable nft
-    if (
-      tokenStandard === TokenStandard.NonFungible ||
-      tokenStandard === TokenStandard.NonFungibleEdition ||
-      tokenStandard === TokenStandard.ProgrammableNonFungible ||
-      tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
-    ) {
+      accounts.prizeMint = metadataAccount.mint;
+      // check if it is a claim
+      if (isClaim) {
+        // if it is a claim, prize gets transferred from prize to winner
+        accounts.prizeTokenAccount = sourceTokenAccount;
+        accounts.winnerTokenAccount = destinationTokenAccount;
+      } else {
+        // if it is not a claim, prize gets transferred from source (creator) to prize
+        accounts.sourceTokenAccount = sourceTokenAccount;
+        accounts.prizeTokenAccount = destinationTokenAccount;
+      }
+
       const [metadata] = findMetadataPda(client.umi, {
         mint: metadataAccount.mint
       });
@@ -85,54 +172,9 @@ const processInstructionAccounts = async (
 
       accounts.metadataProgram = MPL_TOKEN_METADATA_PROGRAM_ID;
       accounts.instructions = SYSVAR_INSTRUCTIONS_PUBKEY;
+      accounts.tokenProgram = TOKEN_PROGRAM_ID;
+      accounts.associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
     }
-
-    // check if it is programmable nft
-    if (
-      tokenStandard === TokenStandard.ProgrammableNonFungible ||
-      tokenStandard === TokenStandard.ProgrammableNonFungibleEdition
-    ) {
-      // derive token record pdas
-      const [sourceTokenRecord] = findTokenRecordPda(client.umi, {
-        mint: metadataAccount.mint,
-        token: fromWeb3JsPublicKey(sourceTokenAccount)
-      });
-      const [destinationTokenRecord] = findTokenRecordPda(client.umi, {
-        mint: metadataAccount.mint,
-        token: fromWeb3JsPublicKey(destinationTokenAccount)
-      });
-      // check if it is a claim
-      if (isClaim) {
-        // if it is a claim, prize gets transferred from prize to winner
-        accounts.prizeTokenRecord = sourceTokenRecord;
-        accounts.winnerTokenRecord = destinationTokenRecord;
-      } else {
-        // if it is not a claim, prize gets transferred from source (creator) to prize
-        accounts.sourceTokenRecord = sourceTokenRecord;
-        accounts.prizeTokenRecord = destinationTokenRecord;
-      }
-    }
-    let authorizationRules = null;
-
-    // check if the programmable nft has a rule set
-    if (
-      isSome(metadataAccount.programmableConfig) &&
-      isSome(metadataAccount.programmableConfig.value.ruleSet) &&
-      defaultPublicKey().toString() !==
-        metadataAccount.programmableConfig.value.ruleSet.value.toString()
-    ) {
-      authorizationRules =
-        metadataAccount.programmableConfig.value.ruleSet.value;
-    }
-    // set the authorization rules account we tried to fetch before
-    // if it is null, no problem, means it shouldn't be there anyway
-    accounts.authorizationRules = authorizationRules;
-    if (authorizationRules) {
-      accounts.authRulesProgram = MPL_TOKEN_AUTH_RULES_PROGRAM_ID;
-    }
-
-    accounts.tokenProgram = TOKEN_PROGRAM_ID;
-    accounts.associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
   }
 
   // if we get in here we know for sure that this is a compressed nft
