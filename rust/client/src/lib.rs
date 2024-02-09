@@ -97,6 +97,18 @@ impl std::fmt::Debug for WinnerRevealed {
     }
 }
 
+impl std::fmt::Debug for ProceedsCollected {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProceedsCollected")
+            .field("raffle", &self.raffle)
+            .field("creator", &self.creator)
+            .field("proceeds_mint", &self.proceeds_mint)
+            .field("amount", &self.amount)
+            .field("fee", &self.fee)
+            .finish()
+    }
+}
+
 impl Entrants {
     /// The size of the account, not accounting for the Anchor Discriminator.
     pub const LEN: usize = std::mem::size_of::<Self>();

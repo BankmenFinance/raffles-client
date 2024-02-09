@@ -1,5 +1,5 @@
 {
-    "version": "0.1.3",
+    "version": "0.1.5",
     "name": "raffles",
     "instructions": [
         {
@@ -64,7 +64,7 @@
             ]
         },
         {
-            "name": "setAuthoity",
+            "name": "setAuthority",
             "accounts": [
                 {
                     "name": "config",
@@ -87,6 +87,33 @@
                 {
                     "name": "newAuthority",
                     "type": "publicKey"
+                }
+            ]
+        },
+        {
+            "name": "setProtocolFee",
+            "accounts": [
+                {
+                    "name": "config",
+                    "isMut": true,
+                    "isSigner": false,
+                    "docs": [
+                        "The global [`Config`]."
+                    ]
+                },
+                {
+                    "name": "authority",
+                    "isMut": false,
+                    "isSigner": true,
+                    "docs": [
+                        "The current authority of the [`Config`]."
+                    ]
+                }
+            ],
+            "args": [
+                {
+                    "name": "protocolFee",
+                    "type": "u16"
                 }
             ]
         },
@@ -1460,6 +1487,36 @@
                             32
                         ]
                     },
+                    "index": false
+                }
+            ]
+        },
+        {
+            "name": "ProceedsCollected",
+            "fields": [
+                {
+                    "name": "raffle",
+                    "type": "publicKey",
+                    "index": false
+                },
+                {
+                    "name": "creator",
+                    "type": "publicKey",
+                    "index": false
+                },
+                {
+                    "name": "proceedsMint",
+                    "type": "publicKey",
+                    "index": false
+                },
+                {
+                    "name": "amount",
+                    "type": "u64",
+                    "index": false
+                },
+                {
+                    "name": "fee",
+                    "type": "u64",
                     "index": false
                 }
             ]
